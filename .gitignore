@@ -10,6 +10,7 @@
 .claude
 .cursor
 .gemini
+.github
 .opencode
 .env
 .env.backup
