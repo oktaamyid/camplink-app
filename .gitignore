@@ -7,11 +7,11 @@
 /storage/*.key
 /storage/pail
 /vendor
-.claude
-.cursor
-.gemini
-.github
-.opencode
+./.claude
+./.cursor
+./.gemini
+./.github
+./.opencode
 .env
 .env.backup
 .env.production
