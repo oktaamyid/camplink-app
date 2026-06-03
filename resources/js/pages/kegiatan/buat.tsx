@@ -1,29 +1,32 @@
 import CampLinkLayout from '@/layouts/camplink-layout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Upload, Bold, Italic, Underline, List, ListOrdered, AlignLeft, Link2, ChevronDown } from 'lucide-react';
-import { useState } from 'react';
 
-const categories = ['Seminar', 'Workshop', 'Lomba', 'Penelitian', 'Proyek'];
+interface Category {
+    id: number;
+    name: string;
+}
+
+interface Props {
+    categories: Category[];
+}
+
 const locations = ['Online', 'Auditorium Kampus', 'Lab Komputer', 'Fakultas Teknik', 'Lainnya'];
 
-export default function BuatKegiatan() {
-    const [form, setForm] = useState({
+export default function BuatKegiatan({ categories }: Props) {
+    const { data, setData, post, processing, errors } = useForm({
         title: '',
-        category: '',
+        category_id: '',
         description: '',
-        date: '',
+        event_date: '',
         location: '',
-        deadline: '',
+        deadline_date: '',
         poster: null as File | null,
     });
 
-    const handleChange = (field: string, value: string) => {
-        setForm((prev) => ({ ...prev, [field]: value }));
-    };
-
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // Frontend only - no actual submission
+        post(route('kegiatan.store'));
     };
 
     return (
@@ -55,10 +58,11 @@ export default function BuatKegiatan() {
                         <input
                             type="text"
                             placeholder="Masukkan judul kegiatan"
-                            value={form.title}
-                            onChange={(e) => handleChange('title', e.target.value)}
-                            className="w-full rounded-lg border border-gray-200 px-3.5 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-[#2F3E8F] focus:outline-none focus:ring-1 focus:ring-[#2F3E8F]"
+                            value={data.title}
+                            onChange={(e) => setData('title', e.target.value)}
+                            className={`w-full rounded-lg border ${errors.title ? 'border-red-500' : 'border-gray-200'} px-3.5 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-[#2F3E8F] focus:outline-none focus:ring-1 focus:ring-[#2F3E8F]`}
                         />
+                        {errors.title && <p className="mt-1 text-xs text-red-500">{errors.title}</p>}
                     </div>
 
                     {/* Category */}
@@ -68,19 +72,20 @@ export default function BuatKegiatan() {
                         </label>
                         <div className="relative">
                             <select
-                                value={form.category}
-                                onChange={(e) => handleChange('category', e.target.value)}
-                                className="w-full appearance-none rounded-lg border border-gray-200 px-3.5 py-2.5 text-sm text-gray-900 focus:border-[#2F3E8F] focus:outline-none focus:ring-1 focus:ring-[#2F3E8F]"
+                                value={data.category_id}
+                                onChange={(e) => setData('category_id', e.target.value)}
+                                className={`w-full appearance-none rounded-lg border ${errors.category_id ? 'border-red-500' : 'border-gray-200'} px-3.5 py-2.5 text-sm text-gray-900 focus:border-[#2F3E8F] focus:outline-none focus:ring-1 focus:ring-[#2F3E8F]`}
                             >
                                 <option value="">Pilih kategori</option>
-                                {categories.map((cat) => (
-                                    <option key={cat} value={cat}>
-                                        {cat}
+                                {categories?.map((cat) => (
+                                    <option key={cat.id} value={cat.id}>
+                                        {cat.name}
                                     </option>
                                 ))}
                             </select>
                             <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
                         </div>
+                        {errors.category_id && <p className="mt-1 text-xs text-red-500">{errors.category_id}</p>}
                     </div>
 
                     {/* Description */}
@@ -102,11 +107,12 @@ export default function BuatKegiatan() {
                         </div>
                         <textarea
                             placeholder="Jelaskan kegiatan Anda secara detail..."
-                            value={form.description}
-                            onChange={(e) => handleChange('description', e.target.value)}
+                            value={data.description}
+                            onChange={(e) => setData('description', e.target.value)}
                             rows={5}
-                            className="w-full rounded-b-lg border border-gray-200 px-3.5 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-[#2F3E8F] focus:outline-none focus:ring-1 focus:ring-[#2F3E8F] resize-none"
+                            className={`w-full rounded-b-lg border ${errors.description ? 'border-red-500 border-t-0' : 'border-gray-200'} px-3.5 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-[#2F3E8F] focus:outline-none focus:ring-1 focus:ring-[#2F3E8F] resize-none`}
                         />
+                        {errors.description && <p className="mt-1 text-xs text-red-500">{errors.description}</p>}
                     </div>
 
                     {/* Date */}
@@ -116,10 +122,11 @@ export default function BuatKegiatan() {
                         </label>
                         <input
                             type="date"
-                            value={form.date}
-                            onChange={(e) => handleChange('date', e.target.value)}
-                            className="w-full rounded-lg border border-gray-200 px-3.5 py-2.5 text-sm text-gray-900 focus:border-[#2F3E8F] focus:outline-none focus:ring-1 focus:ring-[#2F3E8F]"
+                            value={data.event_date}
+                            onChange={(e) => setData('event_date', e.target.value)}
+                            className={`w-full rounded-lg border ${errors.event_date ? 'border-red-500' : 'border-gray-200'} px-3.5 py-2.5 text-sm text-gray-900 focus:border-[#2F3E8F] focus:outline-none focus:ring-1 focus:ring-[#2F3E8F]`}
                         />
+                        {errors.event_date && <p className="mt-1 text-xs text-red-500">{errors.event_date}</p>}
                     </div>
 
                     {/* Location */}
@@ -129,9 +136,9 @@ export default function BuatKegiatan() {
                         </label>
                         <div className="relative">
                             <select
-                                value={form.location}
-                                onChange={(e) => handleChange('location', e.target.value)}
-                                className="w-full appearance-none rounded-lg border border-gray-200 px-3.5 py-2.5 text-sm text-gray-900 focus:border-[#2F3E8F] focus:outline-none focus:ring-1 focus:ring-[#2F3E8F]"
+                                value={data.location}
+                                onChange={(e) => setData('location', e.target.value)}
+                                className={`w-full appearance-none rounded-lg border ${errors.location ? 'border-red-500' : 'border-gray-200'} px-3.5 py-2.5 text-sm text-gray-900 focus:border-[#2F3E8F] focus:outline-none focus:ring-1 focus:ring-[#2F3E8F]`}
                             >
                                 <option value="">Pilih lokasi</option>
                                 {locations.map((loc) => (
@@ -142,6 +149,7 @@ export default function BuatKegiatan() {
                             </select>
                             <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
                         </div>
+                        {errors.location && <p className="mt-1 text-xs text-red-500">{errors.location}</p>}
                     </div>
 
                     {/* Deadline */}
@@ -151,10 +159,11 @@ export default function BuatKegiatan() {
                         </label>
                         <input
                             type="date"
-                            value={form.deadline}
-                            onChange={(e) => handleChange('deadline', e.target.value)}
-                            className="w-full rounded-lg border border-gray-200 px-3.5 py-2.5 text-sm text-gray-900 focus:border-[#2F3E8F] focus:outline-none focus:ring-1 focus:ring-[#2F3E8F]"
+                            value={data.deadline_date}
+                            onChange={(e) => setData('deadline_date', e.target.value)}
+                            className={`w-full rounded-lg border ${errors.deadline_date ? 'border-red-500' : 'border-gray-200'} px-3.5 py-2.5 text-sm text-gray-900 focus:border-[#2F3E8F] focus:outline-none focus:ring-1 focus:ring-[#2F3E8F]`}
                         />
+                        {errors.deadline_date && <p className="mt-1 text-xs text-red-500">{errors.deadline_date}</p>}
                     </div>
 
                     {/* Poster Upload */}
@@ -165,11 +174,19 @@ export default function BuatKegiatan() {
                         <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-200 bg-gray-50 px-4 py-6 hover:border-[#2F3E8F] hover:bg-[#EEF1FA] transition-colors">
                             <Upload className="size-5 text-gray-400" />
                             <div className="text-center">
-                                <p className="text-sm font-medium text-gray-600">Upload Gambar</p>
+                                <p className="text-sm font-medium text-gray-600">
+                                    {data.poster ? data.poster.name : 'Upload Gambar'}
+                                </p>
                                 <p className="text-xs text-gray-400">JPG, PNG, maksimal 2MB</p>
                             </div>
-                            <input type="file" accept="image/*" className="sr-only" />
+                            <input 
+                                type="file" 
+                                accept="image/*" 
+                                className="sr-only" 
+                                onChange={(e) => setData('poster', e.target.files?.[0] || null)}
+                            />
                         </label>
+                        {errors.poster && <p className="mt-1 text-xs text-red-500">{errors.poster}</p>}
                     </div>
                 </div>
 
@@ -177,9 +194,10 @@ export default function BuatKegiatan() {
                 <div className="mt-6">
                     <button
                         type="submit"
-                        className="rounded-lg bg-[#2F3E8F] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#243070] transition-colors"
+                        disabled={processing}
+                        className="rounded-lg bg-[#2F3E8F] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#243070] transition-colors disabled:opacity-50"
                     >
-                        Simpan Kegiatan
+                        {processing ? 'Menyimpan...' : 'Simpan Kegiatan'}
                     </button>
                 </div>
             </form>

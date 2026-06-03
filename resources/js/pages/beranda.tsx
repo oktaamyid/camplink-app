@@ -1,6 +1,26 @@
 import CampLinkLayout from '@/layouts/camplink-layout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { MapPin, Calendar, ChevronRight, Bookmark, Clock } from 'lucide-react';
+import { SharedData } from '@/types';
+
+interface Category {
+    id: number;
+    name: string;
+}
+
+interface Activity {
+    id: number;
+    title: string;
+    category: Category;
+    location: string;
+    event_date: string;
+    poster_url: string | null;
+}
+
+interface BerandaProps extends SharedData {
+    recommendedEvents: Activity[];
+    recentEvents: Activity[];
+}
 
 const categoryColors: Record<string, { bg: string; text: string }> = {
     Lomba: { bg: 'bg-blue-50', text: 'text-blue-700' },
@@ -9,65 +29,6 @@ const categoryColors: Record<string, { bg: string; text: string }> = {
     Penelitian: { bg: 'bg-green-50', text: 'text-green-700' },
     Proyek: { bg: 'bg-rose-50', text: 'text-rose-700' },
 };
-
-const recommendedEvents = [
-    {
-        id: 1,
-        title: 'National Business Plan Competition 2024',
-        category: 'Lomba',
-        location: 'Online',
-        date: '30 Mei 2024',
-        image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=220&fit=crop&auto=format',
-    },
-    {
-        id: 2,
-        title: 'Seminar AI & Masa Depan Teknologi',
-        category: 'Seminar',
-        location: 'Auditorium Kampus',
-        date: '25 Mei 2024',
-        image: 'https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=400&h=220&fit=crop&auto=format',
-    },
-    {
-        id: 3,
-        title: 'Workshop UI/UX Design',
-        category: 'Workshop',
-        location: 'Lab Komputer',
-        date: '28 Mei 2024',
-        image: 'https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?w=400&h=220&fit=crop&auto=format',
-    },
-    {
-        id: 4,
-        title: 'Open Recruitment Asisten Penelitian',
-        category: 'Penelitian',
-        location: 'Fakultas Teknik',
-        date: '31 Mei 2024',
-        image: 'https://images.unsplash.com/photo-1507537297725-24a1c029d3ca?w=400&h=220&fit=crop&auto=format',
-    },
-];
-
-const recentEvents = [
-    {
-        id: 5,
-        title: 'Web Development Bootcamp',
-        category: 'Workshop',
-        date: '24 Mei 2024',
-        location: 'Online',
-    },
-    {
-        id: 6,
-        title: 'LKTI Nasional 2024',
-        category: 'Lomba',
-        date: '23 Mei 2024',
-        location: 'Online',
-    },
-    {
-        id: 7,
-        title: 'Kuliah Tamu: Cyber Security',
-        category: 'Seminar',
-        date: '22 Mei 2024',
-        location: 'Auditorium Kampus',
-    },
-];
 
 function CategoryBadge({ category }: { category: string }) {
     const colors = categoryColors[category] ?? { bg: 'bg-gray-100', text: 'text-gray-600' };
@@ -78,7 +39,20 @@ function CategoryBadge({ category }: { category: string }) {
     );
 }
 
-export default function Beranda() {
+function formatDate(dateStr: string) {
+    const d = new Date(dateStr);
+    return new Intl.DateTimeFormat('id-ID', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+    }).format(d);
+}
+
+const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=220&fit=crop&auto=format';
+
+export default function Beranda({ recommendedEvents, recentEvents }: BerandaProps) {
+    const { auth } = usePage<BerandaProps>().props;
+
     return (
         <CampLinkLayout>
             <Head title="Beranda" />
@@ -86,7 +60,7 @@ export default function Beranda() {
             {/* Welcome section */}
             <div className="mb-6">
                 <h1 className="text-xl font-semibold text-gray-900">
-                    Hai, Raffa! 👋
+                    Hai, {auth?.user?.name || 'Mahasiswa'}! 👋
                 </h1>
                 <p className="mt-1 text-sm text-gray-500">
                     Temukan kegiatan menarik dan bangun kolaborasi bersama mahasiswa lainnya.
@@ -112,12 +86,12 @@ export default function Beranda() {
                         >
                             <div className="relative overflow-hidden">
                                 <img
-                                    src={event.image}
+                                    src={event.poster_url ?? FALLBACK_IMAGE}
                                     alt={event.title}
                                     className="h-28 w-full object-cover transition-transform duration-300 group-hover:scale-105"
                                 />
                                 <div className="absolute left-2 top-2">
-                                    <CategoryBadge category={event.category} />
+                                    <CategoryBadge category={event.category.name} />
                                 </div>
                             </div>
                             <div className="p-3">
@@ -131,7 +105,7 @@ export default function Beranda() {
                                     </div>
                                     <div className="flex items-center gap-1 text-xs text-gray-500">
                                         <Calendar className="size-3 flex-shrink-0" />
-                                        <span>{event.date}</span>
+                                        <span>{formatDate(event.event_date)}</span>
                                     </div>
                                 </div>
                             </div>
@@ -165,8 +139,8 @@ export default function Beranda() {
                             <div className="flex-1 min-w-0">
                                 <p className="text-sm font-medium text-gray-900 truncate">{event.title}</p>
                             </div>
-                            <CategoryBadge category={event.category} />
-                            <span className="text-xs text-gray-400 flex-shrink-0">{event.date}</span>
+                            <CategoryBadge category={event.category.name} />
+                            <span className="text-xs text-gray-400 flex-shrink-0">{formatDate(event.event_date)}</span>
                             <span className="text-xs text-gray-400 flex-shrink-0 hidden md:block">{event.location}</span>
                             <button
                                 className="flex-shrink-0 rounded p-1 hover:bg-gray-100 transition-colors"

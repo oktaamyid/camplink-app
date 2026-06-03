@@ -21,6 +21,16 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'bio',
+        'university',
+        'major',
+        'semester',
+        'location',
+        'skills',
+        'interests',
+        'profile_pic',
+        'is_active',
     ];
 
     /**
@@ -43,6 +53,28 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
         ];
     }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    public function activities(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Activity::class, 'creator_id');
+    }
+
+    public function activityRegistrations(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ActivityRegistration::class);
+    }
+
+    public function teamApplications(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(TeamApplication::class, 'applicant_id');
+    }
+
 }

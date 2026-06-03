@@ -1,30 +1,49 @@
 import CampLinkLayout from '@/layouts/camplink-layout';
-import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft, MapPin, Calendar, Clock, Mail, CheckCircle2, Users } from 'lucide-react';
+import { Head, Link, usePage, useForm, router } from '@inertiajs/react';
+import { ArrowLeft, MapPin, Calendar, Clock, Mail, Users, Plus, Trash2, X, MessageSquare, CheckCircle2 } from 'lucide-react';
+import { useState, FormEventHandler } from 'react';
 
-const event = {
-    id: 1,
-    title: 'National Business Plan Competition 2024',
-    category: 'Lomba',
-    organizer: 'BEM Universitas',
-    isVerified: true,
-    date: '30 Mei 2024',
-    location: 'Online',
-    deadline: '20 Mei 2024',
-    description:
-        'Kompetisi rencana bisnis tingkat nasional untuk mahasiswa seluruh Indonesia. Wujudkan ide bisnis inovatif kamu dan menangkan total hadiah puluhan juta rupiah!',
-    categoryLabel: 'Lomba',
-    field: 'Bisnis, Kewirausahaan',
-    prize: 'Total hadiah Rp 50.000.000',
-    contact: 'bem@universitas.ac.id',
-    image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=300&fit=crop&auto=format',
-    team: {
-        required: '3 - 5 anggota',
-        positions: ['Ketua Tim', 'Marketing', 'Finance', 'IT / Developer', 'Desain Grafis'],
-        quota: 5,
-        filled: 2,
-    },
-};
+interface Category {
+    id: number;
+    name: string;
+}
+
+interface User {
+    id: number;
+    name: string;
+    email: string;
+}
+
+interface TeamRecruitment {
+    id: number;
+    status: string;
+    total_slots: number;
+    filled_slots: number;
+    description: string;
+    skills_required: Array<{ title: string; quota: number }>;
+}
+
+interface Activity {
+    id: number;
+    title: string;
+    category_id: number;
+    creator_id: number;
+    location: string | null;
+    event_date: string | null;
+    deadline_date: string | null;
+    description: string;
+    poster_url: string | null;
+    category: Category;
+    creator: User;
+    is_team_based?: boolean;
+    recruitment?: TeamRecruitment;
+}
+
+interface Props {
+    activity: Activity;
+    userApplication?: any;
+    userRegistration?: any;
+}
 
 function CategoryBadge({ category }: { category: string }) {
     const map: Record<string, { bg: string; text: string }> = {
@@ -42,16 +61,73 @@ function CategoryBadge({ category }: { category: string }) {
     );
 }
 
-export default function KegiatanDetail() {
+const formatDate = (dateString: string | null) => {
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+    });
+};
+
+const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=300&fit=crop&auto=format';
+
+export default function KegiatanDetail({ activity, userApplication, userRegistration }: Props) {
+    const { auth } = usePage().props as any;
+    const currentUser = auth?.user;
+    const isCreator = currentUser?.id === activity.creator_id;
+    const hasRecruitment = !!activity.recruitment;
+
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [showApplyModal, setShowApplyModal] = useState(false);
+
+    // Form for creating recruitment
+    const { data: createData, setData: setCreateData, post: postCreate, processing: createProcessing, errors: createErrors, reset: resetCreate } = useForm({
+        description: '',
+        total_slots: 1,
+        skills_required: [{ title: '', quota: 1 }],
+    });
+
+    const handleCreateSubmit: FormEventHandler = (e) => {
+        e.preventDefault();
+        postCreate(`/kegiatan/${activity.id}/tim`, {
+            onSuccess: () => {
+                setShowCreateModal(false);
+                resetCreate();
+            },
+        });
+    };
+
+    const addSkill = () => {
+        setCreateData('skills_required', [...createData.skills_required, { title: '', quota: 1 }]);
+    };
+
+    const removeSkill = (index: number) => {
+        setCreateData('skills_required', createData.skills_required.filter((_, i) => i !== index));
+    };
+
+    // Form for applying
+    const { data: applyData, setData: setApplyData, post: postApply, processing: applyProcessing, errors: applyErrors, reset: resetApply } = useForm({
+        role: '',
+        message: '',
+    });
+
+    const handleApplySubmit: FormEventHandler = (e) => {
+        e.preventDefault();
+        postApply(`/tim/${activity.recruitment?.id}/apply`, {
+            onSuccess: () => {
+                setShowApplyModal(false);
+                resetApply();
+            },
+        });
+    };
+
     return (
         <CampLinkLayout>
-            <Head title={event.title} />
+            <Head title={activity.title} />
 
             <div className="mb-4">
-                <Link
-                    href="/kegiatan"
-                    className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors"
-                >
+                <Link href="/kegiatan" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors">
                     <ArrowLeft className="size-4" />
                     Kembali
                 </Link>
@@ -63,17 +139,14 @@ export default function KegiatanDetail() {
                     {/* Header */}
                     <div>
                         <div className="mb-3 flex items-start justify-between gap-4">
-                            <h1 className="text-2xl font-bold text-gray-900">{event.title}</h1>
+                            <h1 className="text-2xl font-bold text-gray-900">{activity.title}</h1>
                         </div>
                         <div className="mb-4">
-                            <CategoryBadge category={event.category} />
+                            <CategoryBadge category={activity.category?.name ?? 'Umum'} />
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                             <span>Diselenggarakan oleh</span>
-                            <span className="font-semibold text-gray-900">{event.organizer}</span>
-                            {event.isVerified && (
-                                <CheckCircle2 className="size-4 text-blue-500" />
-                            )}
+                            <span className="font-semibold text-gray-900">{activity.creator?.name ?? 'Anonim'}</span>
                         </div>
                     </div>
 
@@ -81,46 +154,36 @@ export default function KegiatanDetail() {
                     <div className="flex flex-wrap items-center gap-6 rounded-xl border border-gray-200 bg-white px-5 py-4 text-sm">
                         <div className="flex items-center gap-2 text-gray-600">
                             <Calendar className="size-4 text-gray-400" />
-                            <span>{event.date}</span>
+                            <span>{formatDate(activity.event_date)}</span>
                         </div>
                         <div className="flex items-center gap-2 text-gray-600">
                             <MapPin className="size-4 text-gray-400" />
-                            <span>{event.location}</span>
+                            <span>{activity.location ?? '-'}</span>
                         </div>
                         <div className="flex items-center gap-2 text-gray-600">
                             <Clock className="size-4 text-gray-400" />
-                            <span>Pendaftaran hingga {event.deadline}</span>
+                            <span>Pendaftaran hingga {formatDate(activity.deadline_date)}</span>
                         </div>
                     </div>
 
                     {/* Description */}
                     <div className="rounded-xl border border-gray-200 bg-white p-5">
                         <h2 className="mb-3 text-sm font-semibold text-gray-900">Deskripsi</h2>
-                        <p className="text-sm leading-relaxed text-gray-600">{event.description}</p>
+                        <div className="text-sm leading-relaxed text-gray-600 whitespace-pre-wrap">{activity.description}</div>
                     </div>
 
                     {/* Details */}
                     <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
                         <div>
                             <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Kategori</h3>
-                            <p className="text-sm text-gray-900">{event.categoryLabel}</p>
+                            <p className="text-sm text-gray-900">{activity.category?.name ?? 'Umum'}</p>
                         </div>
                         <div className="border-t border-gray-100" />
                         <div>
-                            <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Bidang</h3>
-                            <p className="text-sm text-gray-900">{event.field}</p>
-                        </div>
-                        <div className="border-t border-gray-100" />
-                        <div>
-                            <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Hadiah</h3>
-                            <p className="text-sm font-semibold text-gray-900">{event.prize}</p>
-                        </div>
-                        <div className="border-t border-gray-100" />
-                        <div>
-                            <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Kontak</h3>
-                            <a href={`mailto:${event.contact}`} className="flex items-center gap-1.5 text-sm text-[#2F3E8F] hover:underline">
+                            <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Kontak Pembuat</h3>
+                            <a href={`mailto:${activity.creator?.email}`} className="flex items-center gap-1.5 text-sm text-[#2F3E8F] hover:underline">
                                 <Mail className="size-3.5" />
-                                {event.contact}
+                                {activity.creator?.email ?? '-'}
                             </a>
                         </div>
                     </div>
@@ -130,47 +193,265 @@ export default function KegiatanDetail() {
                 <div className="space-y-4">
                     {/* Event Image */}
                     <div className="overflow-hidden rounded-xl border border-gray-200">
-                        <img src={event.image} alt={event.title} className="w-full h-44 object-cover" />
+                        <img src={activity.poster_url ?? FALLBACK_IMAGE} alt={activity.title} className="w-full h-44 object-cover" />
                     </div>
 
                     {/* Team Info */}
-                    <div className="rounded-xl border border-gray-200 bg-white p-5">
-                        <h2 className="mb-4 text-sm font-semibold text-gray-900">Informasi Tim</h2>
-                        <div className="mb-3 flex items-center gap-2 text-sm text-gray-600">
-                            <Users className="size-4 text-gray-400" />
-                            <span>Dibutuhkan {event.team.required}</span>
+                    {activity.is_team_based && (
+                        <div className="rounded-xl border border-gray-200 bg-white p-5">
+                            <h2 className="mb-4 text-sm font-semibold text-gray-900">Informasi Tim</h2>
+                            
+                            {isCreator ? (
+                                <>
+                                    {hasRecruitment ? (
+                                        <div className="space-y-3">
+                                            <div className="flex items-center justify-between text-sm">
+                                                <span className="text-gray-600">Status</span>
+                                                <span className="font-semibold text-green-600 uppercase">{activity.recruitment?.status}</span>
+                                            </div>
+                                            <div className="flex items-center justify-between text-sm">
+                                                <span className="text-gray-600">Kuota Terisi</span>
+                                                <span className="font-semibold text-gray-900">{activity.recruitment?.filled_slots} / {activity.recruitment?.total_slots}</span>
+                                            </div>
+                                            <Link href={`/kegiatan/${activity.id}/tim`} className="mt-4 block w-full text-center rounded-lg bg-[#2F3E8F] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#243070] transition-colors">
+                                                Kelola Tim
+                                            </Link>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <p className="mb-4 text-sm text-gray-600">Anda dapat membuka rekrutmen anggota tim untuk kegiatan ini.</p>
+                                            <button onClick={() => setShowCreateModal(true)} className="w-full rounded-lg bg-[#2F3E8F] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#243070] transition-colors">
+                                                Buka Rekrutmen
+                                            </button>
+                                        </>
+                                    )}
+                                </>
+                            ) : (
+                                <>
+                                    {hasRecruitment ? (
+                                        <div className="space-y-3">
+                                            <div className="flex items-center justify-between text-sm mb-2">
+                                                <span className="text-gray-600">Kuota Terisi</span>
+                                                <span className="font-semibold text-gray-900">{activity.recruitment?.filled_slots} / {activity.recruitment?.total_slots}</span>
+                                            </div>
+                                            {activity.recruitment?.skills_required.map((skill, idx) => (
+                                                <div key={idx} className="flex justify-between items-center rounded bg-gray-50 p-2 text-xs">
+                                                    <span className="font-medium text-gray-800">{skill.title}</span>
+                                                    <span className="text-gray-500">Kebutuhan: {skill.quota}</span>
+                                                </div>
+                                            ))}
+                                            
+                                            {userApplication ? (
+                                                <div className={`mt-4 w-full text-center rounded-lg px-4 py-2.5 text-sm font-semibold ${
+                                                    userApplication.status === 'accepted' ? 'bg-green-100 text-green-700' : 
+                                                    userApplication.status === 'rejected' ? 'bg-red-100 text-red-700' : 
+                                                    'bg-amber-100 text-amber-700'
+                                                }`}>
+                                                    Status Lamaran: <span className="uppercase">{userApplication.status}</span>
+                                                </div>
+                                            ) : (
+                                                <button onClick={() => setShowApplyModal(true)} disabled={activity.recruitment?.status !== 'open' || activity.recruitment?.filled_slots >= activity.recruitment?.total_slots} className="mt-4 w-full rounded-lg bg-[#2F3E8F] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#243070] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                                    Gabung Tim
+                                                </button>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="mb-3 flex items-center gap-2 text-sm text-gray-600">
+                                            <Users className="size-4 text-gray-400" />
+                                            <span>Belum ada rekrutmen terbuka.</span>
+                                        </div>
+                                    )}
+                                </>
+                            )}
                         </div>
-                        <div className="mb-4">
-                            <p className="mb-2 text-xs font-medium text-gray-500">Posisi yang dibutuhkan:</p>
-                            <div className="space-y-1.5">
-                                {event.team.positions.map((pos) => (
-                                    <div key={pos} className="flex items-center gap-2 text-sm text-gray-700">
-                                        <CheckCircle2 className="size-3.5 text-[#2F3E8F]" />
-                                        {pos}
-                                    </div>
-                                ))}
-                            </div>
+                    )}
+                    
+                    {/* Participant Registration (for all activities) */}
+                    {!isCreator && (
+                        <div className="rounded-xl border border-gray-200 bg-white p-5">
+                            <h2 className="mb-3 text-sm font-semibold text-gray-900">Pendaftaran Peserta</h2>
+                            <p className="mb-4 text-sm text-gray-600">Anda dapat mendaftar sebagai peserta untuk mengikuti kegiatan ini.</p>
+                            
+                            {userRegistration ? (
+                                <div className="w-full text-center rounded-lg bg-emerald-100 px-4 py-2.5 text-sm font-semibold text-emerald-700">
+                                    <span className="flex items-center justify-center gap-2">
+                                        <CheckCircle2 className="size-4" />
+                                        Terdaftar sebagai Peserta
+                                    </span>
+                                </div>
+                            ) : (
+                                <button 
+                                    onClick={() => router.post(`/kegiatan/${activity.id}/daftar`)}
+                                    className="w-full flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors"
+                                >
+                                    Daftar sebagai Peserta
+                                </button>
+                            )}
                         </div>
-                        <button className="w-full rounded-lg bg-[#2F3E8F] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#243070] transition-colors">
-                            Daftar Sekarang
-                        </button>
-                    </div>
+                    )}
 
                     {/* Organizer */}
                     <div className="rounded-xl border border-gray-200 bg-white p-5">
                         <h2 className="mb-3 text-sm font-semibold text-gray-900">Pembuat Kegiatan</h2>
                         <div className="flex items-center gap-3">
                             <div className="flex size-10 items-center justify-center rounded-full bg-[#2F3E8F]">
-                                <span className="text-sm font-semibold text-white">BU</span>
+                                <span className="text-sm font-semibold text-white">
+                                    {activity.creator?.name ? activity.creator.name.substring(0, 2).toUpperCase() : 'U'}
+                                </span>
                             </div>
                             <div>
-                                <p className="text-sm font-semibold text-gray-900">{event.organizer}</p>
-                                <p className="text-xs text-gray-500">Organisasi Mahasiswa</p>
+                                <p className="text-sm font-semibold text-gray-900">{activity.creator?.name ?? 'Anonim'}</p>
+                                <p className="text-xs text-gray-500">Mahasiswa</p>
                             </div>
                         </div>
+
+                        {!isCreator && (
+                            <button 
+                                onClick={() => router.post('/pesan/mulai', { other_user_id: activity.creator_id })} 
+                                className="mt-4 w-full flex items-center justify-center gap-2 rounded-lg border border-[#2F3E8F]/20 bg-[#2F3E8F]/5 text-[#2F3E8F] px-4 py-2 text-sm font-medium hover:bg-[#2F3E8F]/10 transition-colors"
+                            >
+                                <MessageSquare className="size-4" />
+                                Kirim Pesan
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
+
+            {/* Create Recruitment Modal */}
+            {showCreateModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                    <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl max-h-[90vh] overflow-y-auto">
+                        <div className="mb-5 flex items-center justify-between">
+                            <h2 className="text-xl font-bold text-gray-900">Buka Rekrutmen Tim</h2>
+                            <button onClick={() => setShowCreateModal(false)} className="text-gray-400 hover:text-gray-600">
+                                <X className="size-5" />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleCreateSubmit} className="space-y-4">
+                            <div>
+                                <label className="mb-1.5 block text-sm font-medium text-gray-700">Total Slot Anggota</label>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    value={createData.total_slots}
+                                    onChange={(e) => setCreateData('total_slots', parseInt(e.target.value))}
+                                    className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition-all focus:border-[#2F3E8F] focus:ring-2 focus:ring-[#2F3E8F]/20"
+                                    required
+                                />
+                                {createErrors.total_slots && <p className="mt-1 text-xs text-red-500">{createErrors.total_slots}</p>}
+                            </div>
+                            <div>
+                                <label className="mb-1.5 block text-sm font-medium text-gray-700">Deskripsi (Opsional)</label>
+                                <textarea
+                                    rows={3}
+                                    value={createData.description}
+                                    onChange={(e) => setCreateData('description', e.target.value)}
+                                    className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition-all focus:border-[#2F3E8F] focus:ring-2 focus:ring-[#2F3E8F]/20"
+                                    placeholder="Ceritakan proyek ini secara singkat..."
+                                />
+                            </div>
+                            
+                            <div>
+                                <label className="mb-2 block text-sm font-medium text-gray-700">Kebutuhan Posisi & Skill</label>
+                                {createData.skills_required.map((skill, index) => (
+                                    <div key={index} className="flex items-center gap-3 mb-3">
+                                        <div className="flex-1">
+                                            <input
+                                                type="text"
+                                                placeholder="Posisi (Contoh: Backend, UI/UX)"
+                                                value={skill.title}
+                                                onChange={(e) => {
+                                                    const newSkills = [...createData.skills_required];
+                                                    newSkills[index].title = e.target.value;
+                                                    setCreateData('skills_required', newSkills);
+                                                }}
+                                                className="block w-full rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none transition-all focus:border-[#2F3E8F] focus:ring-2 focus:ring-[#2F3E8F]/20"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="w-24">
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                value={skill.quota}
+                                                onChange={(e) => {
+                                                    const newSkills = [...createData.skills_required];
+                                                    newSkills[index].quota = parseInt(e.target.value);
+                                                    setCreateData('skills_required', newSkills);
+                                                }}
+                                                className="block w-full rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none transition-all focus:border-[#2F3E8F] focus:ring-2 focus:ring-[#2F3E8F]/20"
+                                                required
+                                            />
+                                        </div>
+                                        {createData.skills_required.length > 1 && (
+                                            <button type="button" onClick={() => removeSkill(index)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg">
+                                                <Trash2 className="size-4" />
+                                            </button>
+                                        )}
+                                    </div>
+                                ))}
+                                <button type="button" onClick={addSkill} className="mt-1 flex items-center gap-1.5 text-sm font-medium text-[#2F3E8F] hover:underline">
+                                    <Plus className="size-4" /> Tambah Posisi
+                                </button>
+                            </div>
+
+                            <button type="submit" disabled={createProcessing} className="mt-4 w-full rounded-lg bg-[#2F3E8F] px-4 py-3 text-sm font-semibold text-white hover:bg-[#243070] transition-colors disabled:opacity-50">
+                                {createProcessing ? 'Memproses...' : 'Simpan & Buka Rekrutmen'}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Apply Recruitment Modal */}
+            {showApplyModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                    <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+                        <div className="mb-5 flex items-center justify-between">
+                            <h2 className="text-xl font-bold text-gray-900">Gabung ke Tim</h2>
+                            <button onClick={() => setShowApplyModal(false)} className="text-gray-400 hover:text-gray-600">
+                                <X className="size-5" />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleApplySubmit} className="space-y-4">
+                            <div>
+                                <label className="mb-1.5 block text-sm font-medium text-gray-700">Posisi yang Dilamar</label>
+                                <select
+                                    value={applyData.role}
+                                    onChange={(e) => setApplyData('role', e.target.value)}
+                                    className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition-all focus:border-[#2F3E8F] focus:ring-2 focus:ring-[#2F3E8F]/20"
+                                    required
+                                >
+                                    <option value="" disabled>Pilih posisi...</option>
+                                    {activity.recruitment?.skills_required.map((skill, idx) => (
+                                        <option key={idx} value={skill.title}>{skill.title} (Kuota: {skill.quota})</option>
+                                    ))}
+                                </select>
+                                {applyErrors.role && <p className="mt-1 text-xs text-red-500">{applyErrors.role}</p>}
+                            </div>
+                            <div>
+                                <label className="mb-1.5 block text-sm font-medium text-gray-700">Pesan Pengantar</label>
+                                <textarea
+                                    rows={4}
+                                    value={applyData.message}
+                                    onChange={(e) => setApplyData('message', e.target.value)}
+                                    className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition-all focus:border-[#2F3E8F] focus:ring-2 focus:ring-[#2F3E8F]/20"
+                                    placeholder="Jelaskan alasan dan pengalaman Anda mengapa cocok di posisi ini..."
+                                    required
+                                />
+                                {applyErrors.message && <p className="mt-1 text-xs text-red-500">{applyErrors.message}</p>}
+                            </div>
+                            
+                            <button type="submit" disabled={applyProcessing} className="mt-4 w-full rounded-lg bg-[#2F3E8F] px-4 py-3 text-sm font-semibold text-white hover:bg-[#243070] transition-colors disabled:opacity-50">
+                                {applyProcessing ? 'Mengirim...' : 'Kirim Permintaan'}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
         </CampLinkLayout>
     );
 }

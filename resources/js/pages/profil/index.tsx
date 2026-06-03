@@ -1,29 +1,7 @@
 import CampLinkLayout from '@/layouts/camplink-layout';
-import { Head } from '@inertiajs/react';
-import { Edit3, MapPin, Mail, Globe, Github, Linkedin, Instagram, Plus, Bookmark } from 'lucide-react';
-
-const profile = {
-    name: 'Raffa Yuda',
-    role: 'Mahasiswa',
-    university: 'Universitas Indonesia',
-    major: 'Teknik Informatika',
-    semester: 'Semester 6',
-    location: 'Jakarta, Indonesia',
-    email: 'raffa.yuda@student.ui.ac.id',
-    bio: 'Mahasiswa Teknik Informatika yang passionate di bidang web development dan UI/UX design. Aktif mengikuti berbagai kegiatan kampus dan kompetisi teknologi.',
-    skills: ['React', 'Laravel', 'TypeScript', 'UI/UX Design', 'Node.js', 'Python', 'Figma'],
-    interests: ['Web Development', 'AI/ML', 'Startup', 'Design Thinking', 'Data Science'],
-    stats: {
-        events: 12,
-        teams: 4,
-        achievements: 3,
-    },
-    events: [
-        { id: 1, title: 'Workshop UI/UX Design', category: 'Workshop', status: 'Aktif' },
-        { id: 2, title: 'National Business Plan Competition 2024', category: 'Lomba', status: 'Aktif' },
-        { id: 3, title: 'Kuliah Tamu: Cyber Security', category: 'Seminar', status: 'Selesai' },
-    ],
-};
+import { Head, Link, router } from '@inertiajs/react';
+import { Edit3, MapPin, Mail, Globe, Github, Linkedin, Instagram, Plus, Bookmark, X, Check } from 'lucide-react';
+import { useState } from 'react';
 
 const categoryColors: Record<string, { bg: string; text: string }> = {
     Lomba: { bg: 'bg-blue-50', text: 'text-blue-700' },
@@ -33,7 +11,35 @@ const categoryColors: Record<string, { bg: string; text: string }> = {
     Proyek: { bg: 'bg-rose-50', text: 'text-rose-700' },
 };
 
-export default function Profil() {
+export default function Profil({ profileData }: { profileData: any }) {
+    const profile = {
+        name: profileData.name,
+        role: profileData.role === 'mahasiswa' ? 'Mahasiswa' : 'Admin',
+        university: profileData.university,
+        major: profileData.major,
+        semester: profileData.semester,
+        location: profileData.location,
+        email: profileData.email,
+        bio: profileData.bio,
+        skills: profileData.skills || [],
+        interests: profileData.interests || [],
+        stats: profileData.stats,
+        events: profileData.events,
+    };
+
+    const [isEditingSkills, setIsEditingSkills] = useState(false);
+    const [skillsInput, setSkillsInput] = useState(profile.skills.join(', '));
+    const [isEditingInterests, setIsEditingInterests] = useState(false);
+    const [interestsInput, setInterestsInput] = useState(profile.interests.join(', '));
+
+    const saveSkills = () => {
+        router.patch(route('profile.update'), { skills: skillsInput }, { preserveScroll: true, onSuccess: () => setIsEditingSkills(false) });
+    };
+
+    const saveInterests = () => {
+        router.patch(route('profile.update'), { interests: interestsInput }, { preserveScroll: true, onSuccess: () => setIsEditingInterests(false) });
+    };
+
     return (
         <CampLinkLayout>
             <Head title="Profil" />
@@ -46,7 +52,9 @@ export default function Profil() {
                         <div className="flex items-start justify-between mb-4">
                             <div className="flex items-center gap-4">
                                 <div className="flex size-16 items-center justify-center rounded-full bg-[#2F3E8F]">
-                                    <span className="text-xl font-bold text-white">RY</span>
+                                    <span className="text-xl font-bold text-white">
+                                        {profile.name.split(' ').slice(0, 2).map((n: string) => n[0]).join('').toUpperCase()}
+                                    </span>
                                 </div>
                                 <div>
                                     <h1 className="text-base font-bold text-gray-900">{profile.name}</h1>
@@ -54,10 +62,10 @@ export default function Profil() {
                                     <p className="text-xs text-gray-400">{profile.major} · {profile.semester}</p>
                                 </div>
                             </div>
-                            <button className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                            <Link href={route('profile.edit')} className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors">
                                 <Edit3 className="size-3.5" />
                                 Edit
-                            </button>
+                            </Link>
                         </div>
 
                         <p className="text-sm text-gray-600 leading-relaxed mb-4">{profile.bio}</p>
@@ -104,40 +112,82 @@ export default function Profil() {
                     <div className="rounded-xl border border-gray-200 bg-white p-5">
                         <div className="mb-3 flex items-center justify-between">
                             <h2 className="text-sm font-semibold text-gray-900">Skills</h2>
-                            <button className="flex items-center gap-1 text-xs font-medium text-[#2F3E8F] hover:underline">
-                                <Plus className="size-3" /> Tambah
-                            </button>
+                            {!isEditingSkills ? (
+                                <button onClick={() => setIsEditingSkills(true)} className="flex items-center gap-1 text-xs font-medium text-[#2F3E8F] hover:underline">
+                                    <Plus className="size-3" /> Tambah / Edit
+                                </button>
+                            ) : (
+                                <div className="flex gap-2">
+                                    <button onClick={() => setIsEditingSkills(false)} className="text-gray-500 hover:text-gray-700">
+                                        <X className="size-4" />
+                                    </button>
+                                    <button onClick={saveSkills} className="text-green-600 hover:text-green-700">
+                                        <Check className="size-4" />
+                                    </button>
+                                </div>
+                            )}
                         </div>
-                        <div className="flex flex-wrap gap-2">
-                            {profile.skills.map((skill) => (
-                                <span
-                                    key={skill}
-                                    className="rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-gray-700"
-                                >
-                                    {skill}
-                                </span>
-                            ))}
-                        </div>
+                        {isEditingSkills ? (
+                            <textarea
+                                className="w-full rounded-lg border-gray-300 text-sm focus:border-[#2F3E8F] focus:ring-[#2F3E8F]"
+                                rows={2}
+                                value={skillsInput}
+                                onChange={(e) => setSkillsInput(e.target.value)}
+                                placeholder="Misal: React, Laravel, UI/UX (pisahkan dengan koma)"
+                            />
+                        ) : (
+                            <div className="flex flex-wrap gap-2">
+                                {profile.skills && profile.skills.length > 0 ? profile.skills.map((skill: string) => (
+                                    <span
+                                        key={skill}
+                                        className="rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-gray-700"
+                                    >
+                                        {skill}
+                                    </span>
+                                )) : <p className="text-xs text-gray-500">Belum ada skill yang ditambahkan.</p>}
+                            </div>
+                        )}
                     </div>
 
                     {/* Interests */}
                     <div className="rounded-xl border border-gray-200 bg-white p-5">
                         <div className="mb-3 flex items-center justify-between">
                             <h2 className="text-sm font-semibold text-gray-900">Minat</h2>
-                            <button className="flex items-center gap-1 text-xs font-medium text-[#2F3E8F] hover:underline">
-                                <Plus className="size-3" /> Tambah
-                            </button>
+                            {!isEditingInterests ? (
+                                <button onClick={() => setIsEditingInterests(true)} className="flex items-center gap-1 text-xs font-medium text-[#2F3E8F] hover:underline">
+                                    <Plus className="size-3" /> Tambah / Edit
+                                </button>
+                            ) : (
+                                <div className="flex gap-2">
+                                    <button onClick={() => setIsEditingInterests(false)} className="text-gray-500 hover:text-gray-700">
+                                        <X className="size-4" />
+                                    </button>
+                                    <button onClick={saveInterests} className="text-green-600 hover:text-green-700">
+                                        <Check className="size-4" />
+                                    </button>
+                                </div>
+                            )}
                         </div>
-                        <div className="flex flex-wrap gap-2">
-                            {profile.interests.map((interest) => (
-                                <span
-                                    key={interest}
-                                    className="rounded-full bg-[#EEF1FA] px-3 py-1 text-xs font-medium text-[#2F3E8F]"
-                                >
-                                    {interest}
-                                </span>
-                            ))}
-                        </div>
+                        {isEditingInterests ? (
+                            <textarea
+                                className="w-full rounded-lg border-gray-300 text-sm focus:border-[#2F3E8F] focus:ring-[#2F3E8F]"
+                                rows={2}
+                                value={interestsInput}
+                                onChange={(e) => setInterestsInput(e.target.value)}
+                                placeholder="Misal: Web Development, Data Science (pisahkan dengan koma)"
+                            />
+                        ) : (
+                            <div className="flex flex-wrap gap-2">
+                                {profile.interests && profile.interests.length > 0 ? profile.interests.map((interest: string) => (
+                                    <span
+                                        key={interest}
+                                        className="rounded-full bg-[#EEF1FA] px-3 py-1 text-xs font-medium text-[#2F3E8F]"
+                                    >
+                                        {interest}
+                                    </span>
+                                )) : <p className="text-xs text-gray-500">Belum ada minat yang ditambahkan.</p>}
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -147,10 +197,10 @@ export default function Profil() {
                     <div className="rounded-xl border border-gray-200 bg-white p-5">
                         <div className="mb-4 flex items-center justify-between">
                             <h2 className="text-sm font-semibold text-gray-900">Kegiatan Diikuti</h2>
-                            <span className="text-xs text-gray-500">{profile.events.length} kegiatan</span>
+                            <span className="text-xs text-gray-500">{profile.events?.length || 0} kegiatan terakhir</span>
                         </div>
                         <div className="space-y-3">
-                            {profile.events.map((event, i) => {
+                            {profile.events && profile.events.length > 0 ? profile.events.map((event: any, i: number) => {
                                 const colors = categoryColors[event.category] ?? { bg: 'bg-gray-100', text: 'text-gray-600' };
                                 return (
                                     <div
@@ -181,7 +231,7 @@ export default function Profil() {
                                         </span>
                                     </div>
                                 );
-                            })}
+                            }) : <p className="text-sm text-gray-500 text-center py-4">Belum ada kegiatan yang diikuti.</p>}
                         </div>
                     </div>
 
@@ -189,20 +239,15 @@ export default function Profil() {
                     <div className="rounded-xl border border-gray-200 bg-white p-5">
                         <h2 className="mb-4 text-sm font-semibold text-gray-900">Aktivitas Terbaru</h2>
                         <div className="space-y-4">
-                            {[
-                                { text: 'Bergabung ke tim Business Plan Competition sebagai Backend Developer', time: '2 hari lalu' },
-                                { text: 'Mendaftar Workshop UI/UX Design', time: '5 hari lalu' },
-                                { text: 'Membuat kegiatan Web Development Bootcamp', time: '1 minggu lalu' },
-                                { text: 'Menyelesaikan Seminar AI & Masa Depan Teknologi', time: '2 minggu lalu' },
-                            ].map((activity, i) => (
+                            {profile.events && profile.events.length > 0 ? profile.events.map((event: any, i: number) => (
                                 <div key={i} className="flex items-start gap-3">
                                     <div className="mt-1.5 size-1.5 flex-shrink-0 rounded-full bg-[#2F3E8F]" />
                                     <div>
-                                        <p className="text-sm text-gray-700">{activity.text}</p>
-                                        <p className="text-xs text-gray-400 mt-0.5">{activity.time}</p>
+                                        <p className="text-sm text-gray-700">Mendaftar kegiatan <span className="font-semibold">{event.title}</span></p>
+                                        <p className="text-xs text-gray-400 mt-0.5">{event.time}</p>
                                     </div>
                                 </div>
-                            ))}
+                            )) : <p className="text-sm text-gray-500 text-center py-4">Belum ada aktivitas terbaru.</p>}
                         </div>
                     </div>
                 </div>

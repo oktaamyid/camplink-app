@@ -25,7 +25,9 @@ return new class extends Migration
             $table->index('status');
             $table->index('category_id');
             $table->index('creator_id');
-            $table->fullText(['title', 'description']);
+            if (config('database.default') !== 'sqlite' && config('database.connections.'.config('database.default').'.driver') !== 'sqlite' && \Illuminate\Support\Facades\DB::connection()->getDriverName() !== 'sqlite') {
+                $table->fullText(['title', 'description']);
+            }
         });
     }
 
