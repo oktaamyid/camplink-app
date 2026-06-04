@@ -15,7 +15,7 @@ class CampLinkSeeder extends Seeder
             ['name' => 'Workshop',      'description' => 'Pelatihan praktis untuk meningkatkan kemampuan teknis/non-teknis', 'icon' => 'icon-workshop'],
             ['name' => 'Lomba',         'description' => 'Kompetisi antar mahasiswa dalam berbagai bidang',                  'icon' => 'icon-trophy'],
             ['name' => 'Penelitian',    'description' => 'Kegiatan riset dan penelitian ilmiah bersama tim',                 'icon' => 'icon-research'],
-            ['name' => 'Proyek Kuliah', 'description' => 'Proyek pengembangan perangkat lunak atau produk untuk mata kuliah', 'icon' => 'icon-project'],
+            ['name' => 'Proyek Kuliah', 'description' => 'Proyek pengembangan perangkat lunak atau produk untuk mata kuliah','icon' => 'icon-project'],
         ]);
 
         $password = Hash::make('password123');
@@ -23,7 +23,7 @@ class CampLinkSeeder extends Seeder
 
         DB::table('users')->insert([
             ['name' => 'Admin CampLink',             'email' => 'admin@camplink.id',                     'password' => $password, 'role' => 'admin',     'bio' => 'Administrator platform CampLink STT-NF',                                                         'skills' => null,                                              'email_verified_at' => $now, 'created_at' => $now, 'updated_at' => $now],
-            ['name' => 'Raffa Yuda Pratama',          'email' => 'raffa@student.stt-nf.ac.id',            'password' => $password, 'role' => 'mahasiswa', 'bio' => 'Project Manager yang berpengalaman dalam manajemen tim dan pengembangan produk digital.',          'skills' => 'Project Management, Public Speaking, Agile, Scrum', 'email_verified_at' => $now, 'created_at' => $now, 'updated_at' => $now],
+            ['name' => 'Raffa Yuda Pratama',          'email' => 'raffa@student.stt-nf.ac.id',            'password' => $password, 'role' => 'mahasiswa', 'bio' => 'Project Manager yang berpengalaman dalam manajemen tim dan pengembangan produk digital.',          'skills' => 'Project Management, Public Speaking, Agile, Scrum','email_verified_at' => $now, 'created_at' => $now, 'updated_at' => $now],
             ['name' => 'Muhammad Khoirul Anam',       'email' => 'anam@student.stt-nf.ac.id',             'password' => $password, 'role' => 'mahasiswa', 'bio' => 'Pengelola Jira dan tools manajemen proyek untuk tracking progress tim.',                          'skills' => 'Jira, Trello, Project Tracking, Agile',           'email_verified_at' => $now, 'created_at' => $now, 'updated_at' => $now],
             ['name' => 'Nabib Khalish Alfayadh',      'email' => 'nabib@student.stt-nf.ac.id',            'password' => $password, 'role' => 'mahasiswa', 'bio' => 'Media kreatif kelompok, bertanggung jawab atas konten visual dan dokumentasi.',                   'skills' => 'Instagram, Content Creation, Graphic Design, Photography', 'email_verified_at' => $now, 'created_at' => $now, 'updated_at' => $now],
             ['name' => 'Ilham Abdulloh',               'email' => 'ilham@student.stt-nf.ac.id',            'password' => $password, 'role' => 'mahasiswa', 'bio' => 'UI Designer yang berfokus pada perancangan tampilan awal dan halaman authentication.',            'skills' => 'Figma, UI Design, Authentication UI, Wireframing', 'email_verified_at' => $now, 'created_at' => $now, 'updated_at' => $now],
@@ -69,7 +69,7 @@ class CampLinkSeeder extends Seeder
             ['user_id' => 6, 'title' => 'Selamat! Lamaran Tim Anda Diterima',  'message' => 'Lamaran Anda untuk bergabung ke tim Hackathon STT-NF 2026 telah diterima.',                                     'type' => 'application_update', 'reference_id' => 2, 'reference_type' => 'team_application', 'is_read' => false, 'created_at' => $now],
             ['user_id' => 7, 'title' => 'Selamat! Lamaran Tim Anda Diterima',  'message' => 'Lamaran Anda sebagai Frontend Developer di Proyek CampLink telah diterima.',                                    'type' => 'application_update', 'reference_id' => 4, 'reference_type' => 'team_application', 'is_read' => false, 'created_at' => $now],
             ['user_id' => 8, 'title' => 'Selamat! Lamaran Tim Anda Diterima',  'message' => 'Lamaran Anda sebagai Backend Developer di Proyek CampLink telah diterima.',                                     'type' => 'application_update', 'reference_id' => 5, 'reference_type' => 'team_application', 'is_read' => false, 'created_at' => $now],
-            ['user_id' => 3, 'title' => 'Kegiatan Baru: Hackathon STT-NF 2026', 'message' => 'Ada kegiatan baru yang mungkin menarik untukmu: Hackathon STT-NF 2026. Deadline pendaftaran: 25 Mei 2026.',    'type' => 'new_activity',       'reference_id' => 3, 'reference_type' => 'activity',          'is_read' => false, 'created_at' => $now],
+            ['user_id' => 3, 'title' => 'Kegiatan Baru: Hackathon STT-NF 2026','message' => 'Ada kegiatan baru yang mungkin menarik untukmu: Hackathon STT-NF 2026. Deadline pendaftaran: 25 Mei 2026.',    'type' => 'new_activity',       'reference_id' => 3, 'reference_type' => 'activity',          'is_read' => false, 'created_at' => $now],
         ]);
     }
 }

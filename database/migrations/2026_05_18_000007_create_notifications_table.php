@@ -9,12 +9,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('notifications', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->string('type');
-            $table->morphs('notifiable');
-            $table->text('data');
-            $table->timestamp('read_at')->nullable();
-            $table->timestamps();
+            $table->id();
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            $table->string('title', 200);
+            $table->text('message');
+            $table->enum('type', ['application_update', 'new_activity', 'recruitment_closed', 'general'])->default('general');
+            $table->unsignedBigInteger('reference_id')->nullable();
+            $table->string('reference_type', 50)->nullable();
+            $table->boolean('is_read')->default(false);
+            $table->timestamp('created_at')->useCurrent();
+
+            $table->index('user_id');
+            $table->index('is_read');
         });
     }
 
