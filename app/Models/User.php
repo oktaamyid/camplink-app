@@ -87,4 +87,13 @@ class User extends Authenticatable
         return $this->hasMany(ActivityReview::class);
     }
 
+    public function notifications(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Notification::class);
+    }
+
+    public function unreadNotifications(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Notification::class)->where('is_read', false);
+    }
 }

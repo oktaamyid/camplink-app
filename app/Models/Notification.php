@@ -36,4 +36,9 @@ class Notification extends Model
     {
         return $this->morphTo(__FUNCTION__, 'reference_type', 'reference_id');
     }
+
+    public function markAsRead(): bool
+    {
+        return $this->update(['is_read' => true]);
+    }
 }

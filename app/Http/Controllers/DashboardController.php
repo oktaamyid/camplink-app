@@ -45,7 +45,7 @@ class DashboardController extends Controller
                             'type' => 'team_application',
                             'title' => 'Melamar tim: ' . ($app->recruitment->activity->title ?? 'Kegiatan'),
                             'status' => $app->status,
-                            'time' => $app->created_at->diffForHumans()
+                            'time' => $app->applied_at ? $app->applied_at->diffForHumans() : '-'
                         ];
                     }),
                     
@@ -61,7 +61,7 @@ class DashboardController extends Controller
                             'type' => 'event_registration',
                             'title' => 'Mendaftar kegiatan: ' . ($reg->activity->title ?? 'Kegiatan'),
                             'status' => 'registered',
-                            'time' => $reg->created_at->diffForHumans()
+                            'time' => $reg->registered_at ? $reg->registered_at->diffForHumans() : '-'
                         ];
                     })
             ];
