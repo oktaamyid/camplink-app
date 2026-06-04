@@ -22,6 +22,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/aplikasi/{application}/status', [\App\Http\Controllers\TeamController::class, 'updateApplication'])->name('tim.application.update');
     Route::post('/notifikasi/{id}/read', [\App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifikasi.read');
     Route::post('/notifikasi/read-all', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifikasi.readAll');
+    Route::get('/notifikasi', [\App\Http\Controllers\NotificationController::class, 'index'])->name('notifikasi.index');
 });
 
 // CampLink frontend routes (Membutuhkan Login)
@@ -30,6 +31,15 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/kegiatan', [\App\Http\Controllers\ActivityController::class, 'index'])->name('kegiatan.index');
     Route::get('/kegiatan/{kegiatan}', [\App\Http\Controllers\ActivityController::class, 'show'])->name('kegiatan.show');
     Route::post('/kegiatan/{kegiatan}/daftar', [\App\Http\Controllers\ActivityRegistrationController::class, 'store'])->name('kegiatan.daftar');
+    Route::delete('/kegiatan/{kegiatan}/daftar', [\App\Http\Controllers\ActivityRegistrationController::class, 'destroy'])->name('kegiatan.batal');
+
+    // Bookmark routes
+    Route::get('/simpanan', [\App\Http\Controllers\BookmarkController::class, 'index'])->name('simpanan.index');
+    Route::post('/simpanan/{activity}', [\App\Http\Controllers\BookmarkController::class, 'store'])->name('simpanan.store');
+    Route::delete('/simpanan/{activity}', [\App\Http\Controllers\BookmarkController::class, 'destroy'])->name('simpanan.destroy');
+
+    // Review route
+    Route::post('/kegiatan/{activity}/review', [\App\Http\Controllers\ReviewController::class, 'store'])->name('kegiatan.review');
 
     Route::get('/tim', [\App\Http\Controllers\TeamController::class, 'index'])->name('tim.index');
     Route::get('/pesan', [\App\Http\Controllers\MessageController::class, 'index'])->name('pesan.index');

@@ -91,25 +91,39 @@ class ActivityController extends Controller
     public function show(Request $request, Activity $kegiatan): Response
     {
         $kegiatan->load(['category', 'creator', 'recruitment']);
+        $user = $request->user();
 
         $userApplication = null;
-        if ($kegiatan->recruitment && $request->user()) {
+        if ($kegiatan->recruitment && $user) {
             $userApplication = $kegiatan->recruitment->applications()
-                ->where('applicant_id', $request->user()->id)
+                ->where('applicant_id', $user->id)
                 ->first();
         }
 
         $userRegistration = null;
-        if ($request->user()) {
+        $isBookmarked = false;
+        $userReview = null;
+
+        if ($user) {
             $userRegistration = \App\Models\ActivityRegistration::where('activity_id', $kegiatan->id)
-                ->where('user_id', $request->user()->id)
+                ->where('user_id', $user->id)
+                ->first();
+
+            $isBookmarked = \App\Models\Bookmark::where('activity_id', $kegiatan->id)
+                ->where('user_id', $user->id)
+                ->exists();
+
+            $userReview = \App\Models\ActivityReview::where('activity_id', $kegiatan->id)
+                ->where('user_id', $user->id)
                 ->first();
         }
 
         return Inertia::render('kegiatan/show', [
-            'activity' => $kegiatan,
-            'userApplication' => $userApplication,
+            'activity'         => $kegiatan,
+            'userApplication'  => $userApplication,
             'userRegistration' => $userRegistration,
+            'isBookmarked'     => $isBookmarked,
+            'userReview'       => $userReview,
         ]);
     }
 }

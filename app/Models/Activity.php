@@ -50,4 +50,15 @@ class Activity extends Model
     {
         return $this->hasOne(TeamRecruitment::class);
     }
+
+    public function bookmarks(): HasMany
+    {
+        return $this->hasMany(Bookmark::class);
+    }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(ActivityReview::class);
+    }
 }
+

@@ -1,7 +1,8 @@
 import CampLinkLayout from '@/layouts/camplink-layout';
-import { Head, Link, usePage } from '@inertiajs/react';
-import { MapPin, Calendar, ChevronRight, Bookmark, Clock } from 'lucide-react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { MapPin, Calendar, ChevronRight, Bookmark, BookmarkCheck, Clock } from 'lucide-react';
 import { SharedData } from '@/types';
+import { useState } from 'react';
 
 interface Category {
     id: number;
@@ -20,6 +21,7 @@ interface Activity {
 interface BerandaProps extends SharedData {
     recommendedEvents: Activity[];
     recentEvents: Activity[];
+    bookmarkedIds: number[];
 }
 
 const categoryColors: Record<string, { bg: string; text: string }> = {
@@ -50,8 +52,20 @@ function formatDate(dateStr: string) {
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=220&fit=crop&auto=format';
 
-export default function Beranda({ recommendedEvents, recentEvents }: BerandaProps) {
+export default function Beranda({ recommendedEvents, recentEvents, bookmarkedIds = [] }: BerandaProps) {
     const { auth } = usePage<BerandaProps>().props;
+    const [savedIds, setSavedIds] = useState<Set<number>>(new Set(bookmarkedIds));
+
+    const toggleBookmark = (e: React.MouseEvent, activityId: number) => {
+        e.preventDefault();
+        if (savedIds.has(activityId)) {
+            setSavedIds(prev => { const s = new Set(prev); s.delete(activityId); return s; });
+            router.delete(`/simpanan/${activityId}`, { preserveScroll: true });
+        } else {
+            setSavedIds(prev => new Set(prev).add(activityId));
+            router.post(`/simpanan/${activityId}`, {}, { preserveScroll: true });
+        }
+    };
 
     return (
         <CampLinkLayout>
@@ -93,6 +107,16 @@ export default function Beranda({ recommendedEvents, recentEvents }: BerandaProp
                                 <div className="absolute left-2 top-2">
                                     <CategoryBadge category={event.category.name} />
                                 </div>
+                                <button
+                                    onClick={(e) => toggleBookmark(e, event.id)}
+                                    className="absolute right-2 top-2 flex size-6 items-center justify-center rounded-full bg-white/90 shadow-sm hover:bg-white transition-colors"
+                                    title={savedIds.has(event.id) ? 'Hapus simpanan' : 'Simpan'}
+                                >
+                                    {savedIds.has(event.id)
+                                        ? <BookmarkCheck className="size-3.5 text-[#2F3E8F]" />
+                                        : <Bookmark className="size-3.5 text-gray-400" />
+                                    }
+                                </button>
                             </div>
                             <div className="p-3">
                                 <h3 className="mb-2 text-xs font-semibold leading-snug text-gray-900 line-clamp-2">
@@ -144,11 +168,13 @@ export default function Beranda({ recommendedEvents, recentEvents }: BerandaProp
                             <span className="text-xs text-gray-400 flex-shrink-0 hidden md:block">{event.location}</span>
                             <button
                                 className="flex-shrink-0 rounded p-1 hover:bg-gray-100 transition-colors"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                }}
+                                onClick={(e) => toggleBookmark(e, event.id)}
+                                title={savedIds.has(event.id) ? 'Hapus simpanan' : 'Simpan'}
                             >
-                                <Bookmark className="size-4 text-gray-400" />
+                                {savedIds.has(event.id)
+                                    ? <BookmarkCheck className="size-4 text-[#2F3E8F]" />
+                                    : <Bookmark className="size-4 text-gray-400" />
+                                }
                             </button>
                         </Link>
                     ))}

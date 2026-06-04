@@ -10,6 +10,7 @@ import {
 import {
     Bell,
     BookOpen,
+    Bookmark,
     Home,
     MessageSquare,
     User,
@@ -30,6 +31,7 @@ interface NavItem {
 const navItems: NavItem[] = [
     { title: 'Beranda', href: '/beranda', icon: Home },
     { title: 'Kegiatan', href: '/kegiatan', icon: BookOpen },
+    { title: 'Simpanan', href: '/simpanan', icon: Bookmark },
     { title: 'Tim Saya', href: '/tim', icon: Users },
     { title: 'Pesan', href: '/pesan', icon: MessageSquare },
     { title: 'Profil', href: '/profil', icon: User },

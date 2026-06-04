@@ -1,6 +1,6 @@
 import CampLinkLayout from '@/layouts/camplink-layout';
 import { Head, Link, usePage, useForm, router } from '@inertiajs/react';
-import { ArrowLeft, MapPin, Calendar, Clock, Mail, Users, Plus, Trash2, X, MessageSquare, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, Clock, Mail, Users, Plus, Trash2, X, MessageSquare, CheckCircle2, Bookmark, BookmarkCheck, Star, XCircle } from 'lucide-react';
 import { useState, FormEventHandler } from 'react';
 
 interface Category {
@@ -41,8 +41,10 @@ interface Activity {
 
 interface Props {
     activity: Activity;
-    userApplication?: any;
-    userRegistration?: any;
+    userApplication?: { id: number; status: string; role: string } | null;
+    userRegistration?: { id: number; status: string } | null;
+    isBookmarked?: boolean;
+    userReview?: { rating: number; review: string | null } | null;
 }
 
 function CategoryBadge({ category }: { category: string }) {
@@ -72,14 +74,41 @@ const formatDate = (dateString: string | null) => {
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=300&fit=crop&auto=format';
 
-export default function KegiatanDetail({ activity, userApplication, userRegistration }: Props) {
+export default function KegiatanDetail({ activity, userApplication, userRegistration, isBookmarked: initialIsBookmarked = false, userReview }: Props) {
     const { auth } = usePage().props as any;
     const currentUser = auth?.user;
     const isCreator = currentUser?.id === activity.creator_id;
     const hasRecruitment = !!activity.recruitment;
+    const isRegistered = userRegistration?.status === 'registered';
 
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showApplyModal, setShowApplyModal] = useState(false);
+    const [showReviewModal, setShowReviewModal] = useState(false);
+    const [bookmarked, setBookmarked] = useState(initialIsBookmarked);
+    const [bookmarkLoading, setBookmarkLoading] = useState(false);
+
+    const toggleBookmark = () => {
+        if (bookmarkLoading) return;
+        setBookmarkLoading(true);
+        if (bookmarked) {
+            router.delete(`/simpanan/${activity.id}`, {
+                preserveScroll: true,
+                onSuccess: () => setBookmarked(false),
+                onFinish: () => setBookmarkLoading(false),
+            });
+        } else {
+            router.post(`/simpanan/${activity.id}`, {}, {
+                preserveScroll: true,
+                onSuccess: () => setBookmarked(true),
+                onFinish: () => setBookmarkLoading(false),
+            });
+        }
+    };
+
+    const cancelRegistration = () => {
+        if (!confirm('Apakah kamu yakin ingin membatalkan pendaftaran?')) return;
+        router.delete(`/kegiatan/${activity.id}/daftar`, { preserveScroll: true });
+    };
 
     // Form for creating recruitment
     const { data: createData, setData: setCreateData, post: postCreate, processing: createProcessing, errors: createErrors, reset: resetCreate } = useForm({
@@ -140,6 +169,20 @@ export default function KegiatanDetail({ activity, userApplication, userRegistra
                     <div>
                         <div className="mb-3 flex items-start justify-between gap-4">
                             <h1 className="text-2xl font-bold text-gray-900">{activity.title}</h1>
+                            {/* Bookmark button */}
+                            <button
+                                onClick={toggleBookmark}
+                                disabled={bookmarkLoading}
+                                title={bookmarked ? 'Hapus dari simpanan' : 'Simpan kegiatan'}
+                                className={`flex-shrink-0 flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
+                                    bookmarked
+                                        ? 'border-[#2F3E8F] bg-[#2F3E8F]/5 text-[#2F3E8F]'
+                                        : 'border-gray-200 bg-white text-gray-500 hover:border-[#2F3E8F] hover:text-[#2F3E8F]'
+                                } disabled:opacity-50`}
+                            >
+                                {bookmarked ? <BookmarkCheck className="size-4" /> : <Bookmark className="size-4" />}
+                                {bookmarked ? 'Tersimpan' : 'Simpan'}
+                            </button>
                         </div>
                         <div className="mb-4">
                             <CategoryBadge category={activity.category?.name ?? 'Umum'} />
@@ -270,21 +313,73 @@ export default function KegiatanDetail({ activity, userApplication, userRegistra
                     {!isCreator && (
                         <div className="rounded-xl border border-gray-200 bg-white p-5">
                             <h2 className="mb-3 text-sm font-semibold text-gray-900">Pendaftaran Peserta</h2>
-                            <p className="mb-4 text-sm text-gray-600">Anda dapat mendaftar sebagai peserta untuk mengikuti kegiatan ini.</p>
-                            
-                            {userRegistration ? (
-                                <div className="w-full text-center rounded-lg bg-emerald-100 px-4 py-2.5 text-sm font-semibold text-emerald-700">
-                                    <span className="flex items-center justify-center gap-2">
-                                        <CheckCircle2 className="size-4" />
-                                        Terdaftar sebagai Peserta
-                                    </span>
+
+                            {isRegistered ? (
+                                <div className="space-y-2">
+                                    <div className="w-full rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-2.5 text-sm font-semibold text-emerald-700">
+                                        <span className="flex items-center justify-center gap-2">
+                                            <CheckCircle2 className="size-4" />
+                                            Terdaftar sebagai Peserta
+                                        </span>
+                                    </div>
+                                    <button
+                                        onClick={cancelRegistration}
+                                        className="w-full flex items-center justify-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-100 transition-colors"
+                                    >
+                                        <XCircle className="size-4" />
+                                        Batalkan Pendaftaran
+                                    </button>
+                                </div>
+                            ) : userRegistration?.status === 'cancelled' ? (
+                                <div className="space-y-2">
+                                    <p className="text-xs text-gray-500 text-center">Pendaftaran sebelumnya dibatalkan.</p>
+                                    <button
+                                        onClick={() => router.post(`/kegiatan/${activity.id}/daftar`)}
+                                        className="w-full flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors"
+                                    >
+                                        Daftar Kembali
+                                    </button>
                                 </div>
                             ) : (
-                                <button 
-                                    onClick={() => router.post(`/kegiatan/${activity.id}/daftar`)}
-                                    className="w-full flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors"
+                                <>
+                                    <p className="mb-4 text-sm text-gray-600">Daftar sebagai peserta untuk mengikuti kegiatan ini.</p>
+                                    <button
+                                        onClick={() => router.post(`/kegiatan/${activity.id}/daftar`)}
+                                        className="w-full flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors"
+                                    >
+                                        Daftar sebagai Peserta
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Review Section — only for registered users */}
+                    {!isCreator && isRegistered && (
+                        <div className="rounded-xl border border-gray-200 bg-white p-5">
+                            <h2 className="mb-3 text-sm font-semibold text-gray-900">Berikan Ulasan</h2>
+                            {userReview ? (
+                                <div className="space-y-2">
+                                    <div className="flex gap-0.5">
+                                        {[1,2,3,4,5].map(s => (
+                                            <Star key={s} className={`size-4 ${s <= userReview.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200'}`} />
+                                        ))}
+                                    </div>
+                                    {userReview.review && <p className="text-xs text-gray-600 leading-relaxed">{userReview.review}</p>}
+                                    <button
+                                        onClick={() => setShowReviewModal(true)}
+                                        className="text-xs text-[#2F3E8F] hover:underline"
+                                    >
+                                        Edit Ulasan
+                                    </button>
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={() => setShowReviewModal(true)}
+                                    className="w-full flex items-center justify-center gap-2 rounded-lg border border-[#2F3E8F]/20 bg-[#2F3E8F]/5 px-4 py-2.5 text-sm font-medium text-[#2F3E8F] hover:bg-[#2F3E8F]/10 transition-colors"
                                 >
-                                    Daftar sebagai Peserta
+                                    <Star className="size-4" />
+                                    Tulis Ulasan
                                 </button>
                             )}
                         </div>
@@ -452,6 +547,112 @@ export default function KegiatanDetail({ activity, userApplication, userRegistra
                     </div>
                 </div>
             )}
+
+            {/* Review Modal */}
+            {showReviewModal && (
+                <ReviewModal
+                    activityId={activity.id}
+                    existingReview={userReview ?? null}
+                    onClose={() => setShowReviewModal(false)}
+                />
+            )}
         </CampLinkLayout>
+    );
+}
+
+/* ─── Review Modal Component ─────────────────── */
+function ReviewModal({
+    activityId,
+    existingReview,
+    onClose,
+}: {
+    activityId: number;
+    existingReview: { rating: number; review: string | null } | null;
+    onClose: () => void;
+}) {
+    const [rating, setRating] = useState(existingReview?.rating ?? 0);
+    const [hovered, setHovered] = useState(0);
+    const [review, setReview] = useState(existingReview?.review ?? '');
+    const [processing, setProcessing] = useState(false);
+
+    const submit = () => {
+        if (rating === 0) return;
+        setProcessing(true);
+        router.post(
+            `/kegiatan/${activityId}/review`,
+            { rating, review },
+            {
+                preserveScroll: true,
+                onSuccess: () => onClose(),
+                onFinish: () => setProcessing(false),
+            }
+        );
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+                <div className="mb-5 flex items-center justify-between">
+                    <h2 className="text-lg font-bold text-gray-900">
+                        {existingReview ? 'Edit Ulasan' : 'Berikan Ulasan'}
+                    </h2>
+                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+                        <X className="size-5" />
+                    </button>
+                </div>
+
+                <div className="space-y-5">
+                    {/* Star Rating */}
+                    <div>
+                        <label className="mb-2 block text-sm font-medium text-gray-700">Rating Kegiatan</label>
+                        <div className="flex gap-1.5">
+                            {[1, 2, 3, 4, 5].map((s) => (
+                                <button
+                                    key={s}
+                                    type="button"
+                                    onClick={() => setRating(s)}
+                                    onMouseEnter={() => setHovered(s)}
+                                    onMouseLeave={() => setHovered(0)}
+                                    className="transition-transform hover:scale-110"
+                                >
+                                    <Star
+                                        className={`size-8 transition-colors ${
+                                            s <= (hovered || rating)
+                                                ? 'fill-yellow-400 text-yellow-400'
+                                                : 'text-gray-200'
+                                        }`}
+                                    />
+                                </button>
+                            ))}
+                        </div>
+                        {rating === 0 && <p className="mt-1 text-xs text-red-500">Pilih rating terlebih dahulu</p>}
+                    </div>
+
+                    {/* Review Text */}
+                    <div>
+                        <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                            Ulasan <span className="text-gray-400">(Opsional)</span>
+                        </label>
+                        <textarea
+                            rows={4}
+                            value={review}
+                            onChange={(e) => setReview(e.target.value)}
+                            maxLength={1000}
+                            className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition-all focus:border-[#2F3E8F] focus:ring-2 focus:ring-[#2F3E8F]/20 resize-none"
+                            placeholder="Bagikan pengalamanmu mengikuti kegiatan ini..."
+                        />
+                        <p className="mt-1 text-right text-xs text-gray-400">{review.length}/1000</p>
+                    </div>
+
+                    <button
+                        onClick={submit}
+                        disabled={processing || rating === 0}
+                        className="w-full rounded-lg bg-[#2F3E8F] px-4 py-3 text-sm font-semibold text-white hover:bg-[#243070] transition-colors disabled:opacity-50"
+                    >
+                        {processing ? 'Mengirim...' : 'Kirim Ulasan'}
+                    </button>
+                </div>
+            </div>
+        </div>
     );
 }

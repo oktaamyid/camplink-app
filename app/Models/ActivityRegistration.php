@@ -14,6 +14,8 @@ class ActivityRegistration extends Model
     protected $fillable = [
         'activity_id',
         'user_id',
+        'status',
+        'registered_at',
     ];
 
     protected function casts(): array

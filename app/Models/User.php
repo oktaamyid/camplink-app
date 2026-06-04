@@ -77,4 +77,14 @@ class User extends Authenticatable
         return $this->hasMany(TeamApplication::class, 'applicant_id');
     }
 
+    public function bookmarks(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Bookmark::class);
+    }
+
+    public function activityReviews(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ActivityReview::class);
+    }
+
 }
