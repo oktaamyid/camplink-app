@@ -20,6 +20,12 @@ class Activity extends Model
         'poster_url',
         'status',
         'is_team_based',
+        'max_participants',
+        'registration_closed',
+        'is_online',
+        'meeting_url',
+        'contact_person',
+        'requirements',
     ];
 
     protected function casts(): array
@@ -28,6 +34,9 @@ class Activity extends Model
             'event_date' => 'date',
             'deadline_date' => 'date',
             'is_team_based' => 'boolean',
+            'registration_closed' => 'boolean',
+            'is_online' => 'boolean',
+            'max_participants' => 'integer',
         ];
     }
 

@@ -2,28 +2,32 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Notification;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 class NotificationController extends Controller
 {
     public function markAsRead(Request $request, string $id): RedirectResponse
     {
-        $notification = $request->user()->notifications()->findOrFail($id);
-        $notification->markAsRead();
-        
-        // Redirect based on notification data
-        $data = $notification->data;
-        if (isset($data['activity_id'])) {
-            return redirect()->route('kegiatan.show', $data['activity_id']);
+        $notification = Notification::where('user_id', $request->user()->id)
+            ->findOrFail($id);
+
+        $notification->update(['is_read' => true]);
+
+        if ($notification->reference_type === 'activity') {
+            return redirect()->route('kegiatan.show', $notification->reference_id);
         }
-        
+
         return back();
     }
 
     public function markAllAsRead(Request $request): RedirectResponse
     {
-        $request->user()->unreadNotifications->markAsRead();
+        Notification::where('user_id', $request->user()->id)
+            ->where('is_read', false)
+            ->update(['is_read' => true]);
+
         return back();
     }
 }

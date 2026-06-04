@@ -3,15 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Activity;
+use App\Models\Notification;
 use App\Models\TeamApplication;
 use App\Models\TeamRecruitment;
-use App\Notifications\TeamApplicationSubmitted;
-use App\Notifications\TeamApplicationUpdated;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Support\Facades\Gate;
 
 class TeamController extends Controller
 {
@@ -22,10 +20,10 @@ class TeamController extends Controller
             ->with([
                 'recruitment' => function ($query) {
                     $query->withCount([
-                        'applications as pending_count' => fn($q) => $q->where('status', 'pending'),
-                        'applications as accepted_count' => fn($q) => $q->where('status', 'accepted')
+                        'applications as pending_count' => fn ($q) => $q->where('status', 'pending'),
+                        'applications as accepted_count' => fn ($q) => $q->where('status', 'accepted'),
                     ]);
-                }
+                },
             ])
             ->latest()
             ->get();
@@ -101,8 +99,16 @@ class TeamController extends Controller
             'status' => 'pending',
         ]);
 
-        // Notify creator
-        $recruitment->activity->creator->notify(new TeamApplicationSubmitted($application));
+        // Notify creator using custom Notification model
+        Notification::create([
+            'user_id' => $recruitment->activity->creator_id,
+            'title' => 'Ada Pelamar Baru',
+            'message' => "{$request->user()->name} melamar posisi {$validated['role']} di kegiatan {$recruitment->activity->title}",
+            'type' => 'application_update',
+            'reference_id' => $application->id,
+            'reference_type' => 'team_application',
+            'is_read' => false,
+        ]);
 
         return redirect()->back()->with('success', 'Berhasil mengirim permintaan bergabung.');
     }
@@ -136,8 +142,17 @@ class TeamController extends Controller
             'reviewed_at' => now(),
         ]);
 
-        // Notify applicant
-        $application->applicant->notify(new TeamApplicationUpdated($application));
+        // Notify applicant using custom Notification model
+        $statusStr = $validated['status'] === 'accepted' ? 'diterima' : 'ditolak';
+        Notification::create([
+            'user_id' => $application->applicant_id,
+            'title' => $validated['status'] === 'accepted' ? 'Lamaran Tim Anda Diterima' : 'Lamaran Tim Anda Ditolak',
+            'message' => "Lamaran Anda untuk posisi {$application->role} di kegiatan {$application->recruitment->activity->title} telah {$statusStr}.",
+            'type' => 'application_update',
+            'reference_id' => $application->id,
+            'reference_type' => 'team_application',
+            'is_read' => false,
+        ]);
 
         return redirect()->back()->with('success', 'Status lamaran berhasil diperbarui.');
     }

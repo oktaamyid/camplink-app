@@ -4,13 +4,13 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory;
 
     /**
      * The attributes that are mass assignable.
@@ -72,9 +72,18 @@ class User extends Authenticatable
         return $this->hasMany(ActivityRegistration::class);
     }
 
-    public function teamApplications(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function teamApplications(): HasMany
     {
         return $this->hasMany(TeamApplication::class, 'applicant_id');
     }
 
+    public function customNotifications(): HasMany
+    {
+        return $this->hasMany(Notification::class)->latest('created_at');
+    }
+
+    public function unreadCustomNotifications(): HasMany
+    {
+        return $this->hasMany(Notification::class)->where('is_read', false)->latest('created_at');
+    }
 }

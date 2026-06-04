@@ -15,6 +15,7 @@ class TeamRecruitment extends Model
         'total_slots',
         'filled_slots',
         'status',
+        'deadline_date',
     ];
 
     protected function casts(): array
@@ -23,6 +24,7 @@ class TeamRecruitment extends Model
             'total_slots' => 'integer',
             'filled_slots' => 'integer',
             'skills_required' => 'array',
+            'deadline_date' => 'date',
         ];
     }
 

@@ -48,7 +48,7 @@ Route::middleware(['auth'])->group(function () {
                     'title' => $reg->activity->title,
                     'category' => $reg->activity->category ? $reg->activity->category->name : 'Umum',
                     'status' => $reg->activity->status === 'active' ? 'Aktif' : 'Selesai',
-                    'time' => \Carbon\Carbon::parse($reg->registered_at)->diffForHumans()
+                    'time' => optional($reg->registered_at)->diffForHumans() ?? '-'
                 ];
             });
 
