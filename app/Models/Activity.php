@@ -50,4 +50,9 @@ class Activity extends Model
     {
         return $this->hasOne(TeamRecruitment::class);
     }
+
+    public function announcements(): HasMany
+    {
+        return $this->hasMany(Announcement::class)->latest();
+    }
 }

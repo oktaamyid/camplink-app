@@ -18,7 +18,13 @@ return new class extends Migration
             $table->string('contact_person', 150)->nullable()->after('max_participants');
         });
 
-        DB::statement("ALTER TABLE activities MODIFY COLUMN status ENUM('draft','active','completed','cancelled','invalid') NOT NULL DEFAULT 'draft'");
+        if (config('database.default') !== 'sqlite') {
+            DB::statement("ALTER TABLE activities MODIFY COLUMN status ENUM('draft','active','completed','cancelled','invalid') NOT NULL DEFAULT 'draft'");
+        } else {
+            Schema::table('activities', function (Blueprint $table) {
+                $table->string('status')->default('draft')->change();
+            });
+        }
     }
 
     public function down(): void
@@ -34,6 +40,12 @@ return new class extends Migration
             ]);
         });
 
-        DB::statement("ALTER TABLE activities MODIFY COLUMN status ENUM('active','invalid','completed') NOT NULL DEFAULT 'active'");
+        if (config('database.default') !== 'sqlite') {
+            DB::statement("ALTER TABLE activities MODIFY COLUMN status ENUM('active','invalid','completed') NOT NULL DEFAULT 'active'");
+        } else {
+            Schema::table('activities', function (Blueprint $table) {
+                $table->string('status')->default('active')->change();
+            });
+        }
     }
 };

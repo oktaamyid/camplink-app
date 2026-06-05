@@ -11,7 +11,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Support\Facades\Gate;
 
 class TeamController extends Controller
 {
@@ -22,10 +21,10 @@ class TeamController extends Controller
             ->with([
                 'recruitment' => function ($query) {
                     $query->withCount([
-                        'applications as pending_count' => fn($q) => $q->where('status', 'pending'),
-                        'applications as accepted_count' => fn($q) => $q->where('status', 'accepted')
+                        'applications as pending_count' => fn ($q) => $q->where('status', 'pending'),
+                        'applications as accepted_count' => fn ($q) => $q->where('status', 'accepted'),
                     ]);
-                }
+                },
             ])
             ->latest()
             ->get();
@@ -43,7 +42,6 @@ class TeamController extends Controller
 
     public function show(Activity $kegiatan): Response
     {
-        // Load the recruitment and applications if exists
         $kegiatan->load('recruitment.applications.applicant');
 
         return Inertia::render('tim/index', [
@@ -54,7 +52,6 @@ class TeamController extends Controller
 
     public function store(Request $request, Activity $kegiatan): RedirectResponse
     {
-        // Only creator can open recruitment
         if ($kegiatan->creator_id !== $request->user()->id) {
             abort(403, 'Unauthorized action.');
         }
@@ -89,10 +86,9 @@ class TeamController extends Controller
 
         $validated = $request->validate([
             'message' => 'required|string|max:500',
-            'role' => 'required|string', // Which position they are applying for
+            'role' => 'required|string',
         ]);
 
-        // Save the application with role and message
         $application = TeamApplication::create([
             'recruitment_id' => $recruitment->id,
             'applicant_id' => $request->user()->id,
@@ -101,7 +97,6 @@ class TeamController extends Controller
             'status' => 'pending',
         ]);
 
-        // Notify creator
         $recruitment->activity->creator->notify(new TeamApplicationSubmitted($application));
 
         return redirect()->back()->with('success', 'Berhasil mengirim permintaan bergabung.');
@@ -111,7 +106,6 @@ class TeamController extends Controller
     {
         $recruitment = $application->recruitment;
 
-        // Only creator of the activity can update application status
         if ($recruitment->activity->creator_id !== $request->user()->id) {
             abort(403, 'Unauthorized action.');
         }
@@ -121,13 +115,11 @@ class TeamController extends Controller
         ]);
 
         if ($validated['status'] === 'accepted' && $application->status !== 'accepted') {
-            // Check if there are slots available
             if ($recruitment->filled_slots >= $recruitment->total_slots) {
                 return redirect()->back()->with('error', 'Kuota tim sudah penuh.');
             }
             $recruitment->increment('filled_slots');
         } elseif ($validated['status'] === 'rejected' && $application->status === 'accepted') {
-            // If it was accepted and now rejected, decrement slots
             $recruitment->decrement('filled_slots');
         }
 
@@ -136,9 +128,69 @@ class TeamController extends Controller
             'reviewed_at' => now(),
         ]);
 
-        // Notify applicant
         $application->applicant->notify(new TeamApplicationUpdated($application));
 
         return redirect()->back()->with('success', 'Status lamaran berhasil diperbarui.');
+    }
+
+    public function closeRecruitment(Request $request, TeamRecruitment $recruitment): RedirectResponse
+    {
+        if ($recruitment->activity->creator_id !== $request->user()->id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $newStatus = $recruitment->status === 'open' ? 'closed' : 'open';
+        $recruitment->update(['status' => $newStatus]);
+
+        $message = $newStatus === 'closed'
+            ? 'Rekrutmen tim berhasil ditutup.'
+            : 'Rekrutmen tim berhasil dibuka kembali.';
+
+        return redirect()->back()->with('success', $message);
+    }
+
+    public function removeMember(Request $request, TeamApplication $application): RedirectResponse
+    {
+        $recruitment = $application->recruitment;
+
+        if ($recruitment->activity->creator_id !== $request->user()->id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if ($application->status !== 'accepted') {
+            return redirect()->back()->with('error', 'Anggota ini belum diterima.');
+        }
+
+        $recruitment->decrement('filled_slots');
+
+        $application->update([
+            'status' => 'rejected',
+            'reviewed_at' => now(),
+        ]);
+
+        $application->applicant->notify(new TeamApplicationUpdated($application));
+
+        return redirect()->back()->with('success', 'Anggota berhasil dikeluarkan dari tim.');
+    }
+
+    public function updateMemberRole(Request $request, TeamApplication $application): RedirectResponse
+    {
+        $recruitment = $application->recruitment;
+
+        if ($recruitment->activity->creator_id !== $request->user()->id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if ($application->status !== 'accepted') {
+            return redirect()->back()->with('error', 'Hanya anggota yang diterima yang dapat diubah posisinya.');
+        }
+
+        $validated = $request->validate([
+            'role' => 'required|string|max:100',
+        ]);
+
+        $application->update(['role' => $validated['role']]);
+
+        return redirect()->back()->with('success', 'Posisi anggota berhasil diperbarui.');
     }
 }

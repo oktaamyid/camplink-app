@@ -25,7 +25,10 @@ return new class extends Migration
             $table->index('status');
             $table->index('category_id');
             $table->index('creator_id');
-            $table->fullText(['title', 'description']);
+
+            if (config('database.default') !== 'sqlite') {
+                $table->fullText(['title', 'description']);
+            }
         });
     }
 

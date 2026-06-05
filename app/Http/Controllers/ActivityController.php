@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreActivityRequest;
+use App\Http\Requests\UpdateActivityRequest;
 use App\Models\Activity;
 use App\Models\Category;
 use Illuminate\Http\RedirectResponse;
@@ -21,7 +22,7 @@ class ActivityController extends Controller
         $search = $request->input('search');
         if (! empty($search)) {
             $query->where('title', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                ->orWhere('description', 'like', "%{$search}%");
         }
 
         $categories = $request->input('categories', []);
@@ -90,7 +91,7 @@ class ActivityController extends Controller
 
     public function show(Request $request, Activity $kegiatan): Response
     {
-        $kegiatan->load(['category', 'creator', 'recruitment']);
+        $kegiatan->load(['category', 'creator', 'recruitment', 'announcements.creator']);
 
         $userApplication = null;
         if ($kegiatan->recruitment && $request->user()) {
@@ -106,10 +107,89 @@ class ActivityController extends Controller
                 ->first();
         }
 
+        $participantCount = $kegiatan->registrations()->count();
+
         return Inertia::render('kegiatan/show', [
             'activity' => $kegiatan,
             'userApplication' => $userApplication,
             'userRegistration' => $userRegistration,
+            'participantCount' => $participantCount,
+        ]);
+    }
+
+    public function edit(Request $request, Activity $kegiatan): Response
+    {
+        if ($kegiatan->creator_id !== $request->user()->id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $categories = Category::all();
+
+        return Inertia::render('kegiatan/edit', [
+            'activity' => $kegiatan,
+            'categories' => $categories,
+        ]);
+    }
+
+    public function update(UpdateActivityRequest $request, Activity $kegiatan): RedirectResponse
+    {
+        $validated = $request->validated();
+
+        if ($request->hasFile('poster')) {
+            $path = $request->file('poster')->store('posters', 'public');
+            $validated['poster_url'] = Storage::url($path);
+        }
+
+        unset($validated['poster']);
+
+        $kegiatan->update($validated);
+
+        return redirect()->route('kegiatan.show', $kegiatan)->with('success', 'Kegiatan berhasil diperbarui.');
+    }
+
+    public function destroy(Request $request, Activity $kegiatan): RedirectResponse
+    {
+        if ($kegiatan->creator_id !== $request->user()->id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $kegiatan->update(['status' => 'cancelled']);
+
+        return redirect()->route('kegiatan.index')->with('success', 'Kegiatan berhasil dibatalkan.');
+    }
+
+    public function toggleRegistration(Request $request, Activity $kegiatan): RedirectResponse
+    {
+        if ($kegiatan->creator_id !== $request->user()->id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $newStatus = $kegiatan->status === 'active' ? 'draft' : 'active';
+        $kegiatan->update(['status' => $newStatus]);
+
+        $message = $newStatus === 'active'
+            ? 'Pendaftaran kegiatan berhasil dibuka.'
+            : 'Pendaftaran kegiatan berhasil ditutup.';
+
+        return redirect()->back()->with('success', $message);
+    }
+
+    public function participants(Request $request, Activity $kegiatan): Response
+    {
+        if ($kegiatan->creator_id !== $request->user()->id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $kegiatan->load('category');
+
+        $participants = $kegiatan->registrations()
+            ->with('user:id,name,email,university,major')
+            ->latest('registered_at')
+            ->get();
+
+        return Inertia::render('kegiatan/peserta', [
+            'activity' => $kegiatan,
+            'participants' => $participants,
         ]);
     }
 }

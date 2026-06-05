@@ -1,6 +1,6 @@
 import CampLinkLayout from '@/layouts/camplink-layout';
 import { Head, Link, usePage, useForm, router } from '@inertiajs/react';
-import { ArrowLeft, MapPin, Calendar, Clock, Mail, Users, Plus, Trash2, X, MessageSquare, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, Clock, Mail, Users, Plus, Trash2, X, MessageSquare, CheckCircle2, Edit3, AlertTriangle, Eye, Lock, Unlock, Megaphone } from 'lucide-react';
 import { useState, FormEventHandler } from 'react';
 
 interface Category {
@@ -23,6 +23,14 @@ interface TeamRecruitment {
     skills_required: Array<{ title: string; quota: number }>;
 }
 
+interface Announcement {
+    id: number;
+    title: string;
+    content: string;
+    created_at: string;
+    creator: User;
+}
+
 interface Activity {
     id: number;
     title: string;
@@ -33,16 +41,19 @@ interface Activity {
     deadline_date: string | null;
     description: string;
     poster_url: string | null;
+    status: string;
     category: Category;
     creator: User;
     is_team_based?: boolean;
     recruitment?: TeamRecruitment;
+    announcements?: Announcement[];
 }
 
 interface Props {
     activity: Activity;
     userApplication?: any;
     userRegistration?: any;
+    participantCount?: number;
 }
 
 function CategoryBadge({ category }: { category: string }) {
@@ -61,6 +72,21 @@ function CategoryBadge({ category }: { category: string }) {
     );
 }
 
+function StatusBadge({ status }: { status: string }) {
+    const map: Record<string, { bg: string; text: string; label: string }> = {
+        active: { bg: 'bg-green-50', text: 'text-green-700', label: 'Aktif' },
+        draft: { bg: 'bg-gray-100', text: 'text-gray-600', label: 'Draft (Pendaftaran Ditutup)' },
+        completed: { bg: 'bg-blue-50', text: 'text-blue-700', label: 'Selesai' },
+        cancelled: { bg: 'bg-red-50', text: 'text-red-700', label: 'Dibatalkan' },
+    };
+    const colors = map[status] ?? { bg: 'bg-gray-100', text: 'text-gray-600', label: status };
+    return (
+        <span className={`inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium ${colors.bg} ${colors.text}`}>
+            {colors.label}
+        </span>
+    );
+}
+
 const formatDate = (dateString: string | null) => {
     if (!dateString) return '-';
     return new Date(dateString).toLocaleDateString('id-ID', {
@@ -70,9 +96,19 @@ const formatDate = (dateString: string | null) => {
     });
 };
 
+const formatDateTime = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+    });
+};
+
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=300&fit=crop&auto=format';
 
-export default function KegiatanDetail({ activity, userApplication, userRegistration }: Props) {
+export default function KegiatanDetail({ activity, userApplication, userRegistration, participantCount = 0 }: Props) {
     const { auth } = usePage().props as any;
     const currentUser = auth?.user;
     const isCreator = currentUser?.id === activity.creator_id;
@@ -80,6 +116,8 @@ export default function KegiatanDetail({ activity, userApplication, userRegistra
 
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showApplyModal, setShowApplyModal] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
 
     // Form for creating recruitment
     const { data: createData, setData: setCreateData, post: postCreate, processing: createProcessing, errors: createErrors, reset: resetCreate } = useForm({
@@ -122,11 +160,39 @@ export default function KegiatanDetail({ activity, userApplication, userRegistra
         });
     };
 
+    // Form for announcement
+    const { data: announcementData, setData: setAnnouncementData, post: postAnnouncement, processing: announcementProcessing, errors: announcementErrors, reset: resetAnnouncement } = useForm({
+        title: '',
+        content: '',
+    });
+
+    const handleAnnouncementSubmit: FormEventHandler = (e) => {
+        e.preventDefault();
+        postAnnouncement(`/kegiatan/${activity.id}/pengumuman`, {
+            onSuccess: () => {
+                setShowAnnouncementModal(false);
+                resetAnnouncement();
+            },
+        });
+    };
+
+    const handleDelete = () => {
+        router.delete(`/kegiatan/${activity.id}`, {
+            onSuccess: () => setShowDeleteConfirm(false),
+        });
+    };
+
+    const handleToggleRegistration = () => {
+        router.post(`/kegiatan/${activity.id}/toggle-registration`, {}, {
+            preserveScroll: true,
+        });
+    };
+
     return (
         <CampLinkLayout>
             <Head title={activity.title} />
 
-            <div className="mb-4">
+            <div className="mb-4 flex items-center justify-between">
                 <Link href="/kegiatan" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors">
                     <ArrowLeft className="size-4" />
                     Kembali
@@ -141,8 +207,9 @@ export default function KegiatanDetail({ activity, userApplication, userRegistra
                         <div className="mb-3 flex items-start justify-between gap-4">
                             <h1 className="text-2xl font-bold text-gray-900">{activity.title}</h1>
                         </div>
-                        <div className="mb-4">
+                        <div className="mb-4 flex items-center gap-2 flex-wrap">
                             <CategoryBadge category={activity.category?.name ?? 'Umum'} />
+                            <StatusBadge status={activity.status} />
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                             <span>Diselenggarakan oleh</span>
@@ -163,6 +230,10 @@ export default function KegiatanDetail({ activity, userApplication, userRegistra
                         <div className="flex items-center gap-2 text-gray-600">
                             <Clock className="size-4 text-gray-400" />
                             <span>Pendaftaran hingga {formatDate(activity.deadline_date)}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-gray-600">
+                            <Users className="size-4 text-gray-400" />
+                            <span>{participantCount} Peserta terdaftar</span>
                         </div>
                     </div>
 
@@ -187,6 +258,44 @@ export default function KegiatanDetail({ activity, userApplication, userRegistra
                             </a>
                         </div>
                     </div>
+
+                    {/* Announcements Section */}
+                    {(activity.announcements && activity.announcements.length > 0 || isCreator) && (
+                        <div className="rounded-xl border border-gray-200 bg-white p-5">
+                            <div className="mb-4 flex items-center justify-between">
+                                <h2 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                                    <Megaphone className="size-4 text-[#2F3E8F]" />
+                                    Pengumuman
+                                </h2>
+                                {isCreator && (
+                                    <button
+                                        onClick={() => setShowAnnouncementModal(true)}
+                                        className="flex items-center gap-1.5 rounded-lg bg-[#2F3E8F] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#243070] transition-colors"
+                                    >
+                                        <Plus className="size-3.5" />
+                                        Buat Pengumuman
+                                    </button>
+                                )}
+                            </div>
+
+                            {activity.announcements && activity.announcements.length > 0 ? (
+                                <div className="space-y-3">
+                                    {activity.announcements.map((announcement) => (
+                                        <div key={announcement.id} className="rounded-lg border border-gray-100 bg-gray-50 p-4">
+                                            <div className="flex items-start justify-between mb-2">
+                                                <h3 className="text-sm font-semibold text-gray-900">{announcement.title}</h3>
+                                                <span className="text-xs text-gray-400 shrink-0 ml-3">{formatDateTime(announcement.created_at)}</span>
+                                            </div>
+                                            <p className="text-sm text-gray-600 whitespace-pre-wrap">{announcement.content}</p>
+                                            <p className="mt-2 text-xs text-gray-400">oleh {announcement.creator.name}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-sm text-gray-500 text-center py-4">Belum ada pengumuman.</p>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {/* Right Sidebar */}
@@ -195,6 +304,56 @@ export default function KegiatanDetail({ activity, userApplication, userRegistra
                     <div className="overflow-hidden rounded-xl border border-gray-200">
                         <img src={activity.poster_url ?? FALLBACK_IMAGE} alt={activity.title} className="w-full h-44 object-cover" />
                     </div>
+
+                    {/* Creator Actions */}
+                    {isCreator && activity.status !== 'cancelled' && (
+                        <div className="rounded-xl border border-gray-200 bg-white p-5">
+                            <h2 className="mb-3 text-sm font-semibold text-gray-900">Kelola Kegiatan</h2>
+                            <div className="space-y-2">
+                                <Link
+                                    href={`/kegiatan/${activity.id}/edit`}
+                                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#2F3E8F] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#243070] transition-colors"
+                                >
+                                    <Edit3 className="size-4" />
+                                    Edit Kegiatan
+                                </Link>
+                                <Link
+                                    href={`/kegiatan/${activity.id}/peserta`}
+                                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#2F3E8F]/20 bg-[#2F3E8F]/5 px-4 py-2.5 text-sm font-medium text-[#2F3E8F] hover:bg-[#2F3E8F]/10 transition-colors"
+                                >
+                                    <Eye className="size-4" />
+                                    Lihat Peserta ({participantCount})
+                                </Link>
+                                <button
+                                    onClick={handleToggleRegistration}
+                                    className={`flex w-full items-center justify-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors ${
+                                        activity.status === 'active'
+                                            ? 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100'
+                                            : 'border-green-200 bg-green-50 text-green-700 hover:bg-green-100'
+                                    }`}
+                                >
+                                    {activity.status === 'active' ? (
+                                        <>
+                                            <Lock className="size-4" />
+                                            Tutup Pendaftaran
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Unlock className="size-4" />
+                                            Buka Pendaftaran
+                                        </>
+                                    )}
+                                </button>
+                                <button
+                                    onClick={() => setShowDeleteConfirm(true)}
+                                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-100 transition-colors"
+                                >
+                                    <Trash2 className="size-4" />
+                                    Batalkan Kegiatan
+                                </button>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Team Info */}
                     {activity.is_team_based && (
@@ -282,7 +441,8 @@ export default function KegiatanDetail({ activity, userApplication, userRegistra
                             ) : (
                                 <button 
                                     onClick={() => router.post(`/kegiatan/${activity.id}/daftar`)}
-                                    className="w-full flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors"
+                                    disabled={activity.status !== 'active'}
+                                    className="w-full flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     Daftar sebagai Peserta
                                 </button>
@@ -317,6 +477,37 @@ export default function KegiatanDetail({ activity, userApplication, userRegistra
                     </div>
                 </div>
             </div>
+
+            {/* Delete Confirmation Modal */}
+            {showDeleteConfirm && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                    <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+                        <div className="mb-4 flex items-center gap-3">
+                            <div className="flex size-10 items-center justify-center rounded-full bg-red-100">
+                                <AlertTriangle className="size-5 text-red-600" />
+                            </div>
+                            <h2 className="text-lg font-bold text-gray-900">Batalkan Kegiatan?</h2>
+                        </div>
+                        <p className="mb-6 text-sm text-gray-600">
+                            Kegiatan ini akan dibatalkan dan tidak bisa diakses oleh peserta lagi. Tindakan ini tidak dapat dibatalkan.
+                        </p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setShowDeleteConfirm(false)}
+                                className="flex-1 rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                onClick={handleDelete}
+                                className="flex-1 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-700 transition-colors"
+                            >
+                                Ya, Batalkan
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Create Recruitment Modal */}
             {showCreateModal && (
@@ -447,6 +638,51 @@ export default function KegiatanDetail({ activity, userApplication, userRegistra
                             
                             <button type="submit" disabled={applyProcessing} className="mt-4 w-full rounded-lg bg-[#2F3E8F] px-4 py-3 text-sm font-semibold text-white hover:bg-[#243070] transition-colors disabled:opacity-50">
                                 {applyProcessing ? 'Mengirim...' : 'Kirim Permintaan'}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Announcement Modal */}
+            {showAnnouncementModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                    <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+                        <div className="mb-5 flex items-center justify-between">
+                            <h2 className="text-xl font-bold text-gray-900">Buat Pengumuman</h2>
+                            <button onClick={() => setShowAnnouncementModal(false)} className="text-gray-400 hover:text-gray-600">
+                                <X className="size-5" />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleAnnouncementSubmit} className="space-y-4">
+                            <div>
+                                <label className="mb-1.5 block text-sm font-medium text-gray-700">Judul Pengumuman</label>
+                                <input
+                                    type="text"
+                                    value={announcementData.title}
+                                    onChange={(e) => setAnnouncementData('title', e.target.value)}
+                                    className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition-all focus:border-[#2F3E8F] focus:ring-2 focus:ring-[#2F3E8F]/20"
+                                    placeholder="Masukkan judul pengumuman..."
+                                    required
+                                />
+                                {announcementErrors.title && <p className="mt-1 text-xs text-red-500">{announcementErrors.title}</p>}
+                            </div>
+                            <div>
+                                <label className="mb-1.5 block text-sm font-medium text-gray-700">Isi Pengumuman</label>
+                                <textarea
+                                    rows={5}
+                                    value={announcementData.content}
+                                    onChange={(e) => setAnnouncementData('content', e.target.value)}
+                                    className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition-all focus:border-[#2F3E8F] focus:ring-2 focus:ring-[#2F3E8F]/20"
+                                    placeholder="Tulis isi pengumuman..."
+                                    required
+                                />
+                                {announcementErrors.content && <p className="mt-1 text-xs text-red-500">{announcementErrors.content}</p>}
+                            </div>
+                            
+                            <button type="submit" disabled={announcementProcessing} className="mt-4 w-full rounded-lg bg-[#2F3E8F] px-4 py-3 text-sm font-semibold text-white hover:bg-[#243070] transition-colors disabled:opacity-50">
+                                {announcementProcessing ? 'Menyimpan...' : 'Publikasikan Pengumuman'}
                             </button>
                         </form>
                     </div>

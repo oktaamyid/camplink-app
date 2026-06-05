@@ -1,7 +1,7 @@
 import CampLinkLayout from '@/layouts/camplink-layout';
-import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useState } from 'react';
-import { ArrowLeft, Users, CheckCircle2, XCircle, FileText, MessageSquare } from 'lucide-react';
+import { Head, Link, router, usePage, useForm } from '@inertiajs/react';
+import { useState, FormEventHandler } from 'react';
+import { ArrowLeft, Users, CheckCircle2, XCircle, FileText, MessageSquare, Lock, Unlock, UserMinus, Edit3, X, MoreVertical } from 'lucide-react';
 
 interface User {
     id: number;
@@ -56,6 +56,13 @@ export default function Tim({ activity, recruitment }: Props) {
     const isCreator = currentUser?.id === activity.creator_id;
 
     const [processing, setProcessing] = useState(false);
+    const [showRoleModal, setShowRoleModal] = useState(false);
+    const [editingMember, setEditingMember] = useState<TeamApplication | null>(null);
+    const [openDropdown, setOpenDropdown] = useState<number | null>(null);
+
+    const { data: roleData, setData: setRoleData, patch: patchRole, processing: roleProcessing, reset: resetRole } = useForm({
+        role: '',
+    });
 
     const handleUpdateStatus = (applicationId: number, status: 'accepted' | 'rejected') => {
         if (!confirm(`Apakah Anda yakin ingin ${status === 'accepted' ? 'menerima' : 'menolak'} kandidat ini?`)) {
@@ -66,6 +73,45 @@ export default function Tim({ activity, recruitment }: Props) {
             preserveScroll: true,
             onBefore: () => setProcessing(true),
             onFinish: () => setProcessing(false),
+        });
+    };
+
+    const handleCloseRecruitment = () => {
+        if (!recruitment) return;
+        const action = recruitment.status === 'open' ? 'menutup' : 'membuka kembali';
+        if (!confirm(`Apakah Anda yakin ingin ${action} rekrutmen tim?`)) return;
+
+        router.patch(`/tim/${recruitment.id}/close`, {}, {
+            preserveScroll: true,
+        });
+    };
+
+    const handleRemoveMember = (applicationId: number, memberName: string) => {
+        if (!confirm(`Apakah Anda yakin ingin mengeluarkan ${memberName} dari tim?`)) return;
+
+        router.delete(`/aplikasi/${applicationId}/remove`, {
+            preserveScroll: true,
+        });
+    };
+
+    const openRoleModal = (member: TeamApplication) => {
+        setEditingMember(member);
+        setRoleData('role', member.role);
+        setShowRoleModal(true);
+        setOpenDropdown(null);
+    };
+
+    const handleRoleSubmit: FormEventHandler = (e) => {
+        e.preventDefault();
+        if (!editingMember) return;
+
+        patchRole(`/aplikasi/${editingMember.id}/role`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setShowRoleModal(false);
+                setEditingMember(null);
+                resetRole();
+            },
         });
     };
 
@@ -88,7 +134,6 @@ export default function Tim({ activity, recruitment }: Props) {
     const acceptedApplications = recruitment.applications.filter(a => a.status === 'accepted');
     const pendingApplications = recruitment.applications.filter(a => a.status === 'pending');
 
-    // Calculate open positions and filled quota
     const positions = recruitment.skills_required.map(skill => {
         const filled = acceptedApplications.filter(a => a.role === skill.title).length;
         return {
@@ -111,9 +156,33 @@ export default function Tim({ activity, recruitment }: Props) {
                 </Link>
             </div>
 
-            <div className="mb-6">
-                <h1 className="text-xl font-semibold text-gray-900">Tim Kolaborasi</h1>
-                <p className="mt-1 text-sm text-gray-500">{activity.title}</p>
+            <div className="mb-6 flex items-center justify-between">
+                <div>
+                    <h1 className="text-xl font-semibold text-gray-900">Tim Kolaborasi</h1>
+                    <p className="mt-1 text-sm text-gray-500">{activity.title}</p>
+                </div>
+                {isCreator && (
+                    <button
+                        onClick={handleCloseRecruitment}
+                        className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                            recruitment.status === 'open'
+                                ? 'border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100'
+                                : 'border border-green-200 bg-green-50 text-green-700 hover:bg-green-100'
+                        }`}
+                    >
+                        {recruitment.status === 'open' ? (
+                            <>
+                                <Lock className="size-4" />
+                                Tutup Rekrutmen
+                            </>
+                        ) : (
+                            <>
+                                <Unlock className="size-4" />
+                                Buka Rekrutmen
+                            </>
+                        )}
+                    </button>
+                )}
             </div>
 
             <div className="grid gap-6 lg:grid-cols-3">
@@ -192,6 +261,35 @@ export default function Tim({ activity, recruitment }: Props) {
                                             >
                                                 <MessageSquare className="size-4" />
                                             </button>
+                                        )}
+                                        {isCreator && (
+                                            <div className="relative">
+                                                <button
+                                                    onClick={() => setOpenDropdown(openDropdown === app.id ? null : app.id)}
+                                                    className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                                                    title="Opsi lainnya"
+                                                >
+                                                    <MoreVertical className="size-4" />
+                                                </button>
+                                                {openDropdown === app.id && (
+                                                    <div className="absolute right-0 top-full mt-1 z-20 w-44 rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
+                                                        <button
+                                                            onClick={() => openRoleModal(app)}
+                                                            className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                                                        >
+                                                            <Edit3 className="size-3.5" />
+                                                            Ubah Posisi
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleRemoveMember(app.id, app.applicant.name)}
+                                                            className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                                                        >
+                                                            <UserMinus className="size-3.5" />
+                                                            Keluarkan
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
                                         )}
                                     </div>
                                 </div>
@@ -295,6 +393,12 @@ export default function Tim({ activity, recruitment }: Props) {
                         <h2 className="mb-3 text-sm font-semibold text-gray-900">Statistik Tim</h2>
                         <div className="space-y-3">
                             <div className="flex items-center justify-between">
+                                <span className="text-sm text-gray-600">Status Rekrutmen</span>
+                                <span className={`text-xs font-semibold uppercase ${recruitment.status === 'open' ? 'text-green-600' : 'text-gray-500'}`}>
+                                    {recruitment.status === 'open' ? 'Terbuka' : 'Ditutup'}
+                                </span>
+                            </div>
+                            <div className="flex items-center justify-between">
                                 <span className="text-sm text-gray-600">Total Anggota</span>
                                 <span className="text-sm font-semibold text-gray-900">{recruitment.filled_slots + 1}</span>
                             </div>
@@ -312,6 +416,45 @@ export default function Tim({ activity, recruitment }: Props) {
                     </div>
                 </div>
             </div>
+
+            {/* Update Role Modal */}
+            {showRoleModal && editingMember && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                    <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+                        <div className="mb-5 flex items-center justify-between">
+                            <h2 className="text-lg font-bold text-gray-900">Ubah Posisi</h2>
+                            <button onClick={() => { setShowRoleModal(false); setEditingMember(null); }} className="text-gray-400 hover:text-gray-600">
+                                <X className="size-5" />
+                            </button>
+                        </div>
+
+                        <p className="mb-4 text-sm text-gray-600">
+                            Ubah posisi <span className="font-semibold text-gray-900">{editingMember.applicant.name}</span> dalam tim.
+                        </p>
+
+                        <form onSubmit={handleRoleSubmit} className="space-y-4">
+                            <div>
+                                <label className="mb-1.5 block text-sm font-medium text-gray-700">Posisi Baru</label>
+                                <select
+                                    value={roleData.role}
+                                    onChange={(e) => setRoleData('role', e.target.value)}
+                                    className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition-all focus:border-[#2F3E8F] focus:ring-2 focus:ring-[#2F3E8F]/20"
+                                    required
+                                >
+                                    <option value="" disabled>Pilih posisi...</option>
+                                    {recruitment.skills_required.map((skill, idx) => (
+                                        <option key={idx} value={skill.title}>{skill.title}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <button type="submit" disabled={roleProcessing} className="w-full rounded-lg bg-[#2F3E8F] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#243070] transition-colors disabled:opacity-50">
+                                {roleProcessing ? 'Menyimpan...' : 'Simpan Perubahan'}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
         </CampLinkLayout>
     );
 }

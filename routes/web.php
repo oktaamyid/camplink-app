@@ -8,6 +8,7 @@ Route::get('/', function () {
     if (Auth::check() && Auth::user()->role === 'admin') {
         return redirect()->route('dashboard');
     }
+
     return redirect()->route('beranda');
 })->name('home');
 
@@ -16,12 +17,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/kegiatan/buat', [\App\Http\Controllers\ActivityController::class, 'create'])->name('kegiatan.buat');
     Route::post('/kegiatan', [\App\Http\Controllers\ActivityController::class, 'store'])->name('kegiatan.store');
+    Route::get('/kegiatan/{kegiatan}/edit', [\App\Http\Controllers\ActivityController::class, 'edit'])->name('kegiatan.edit');
+    Route::put('/kegiatan/{kegiatan}', [\App\Http\Controllers\ActivityController::class, 'update'])->name('kegiatan.update');
+    Route::delete('/kegiatan/{kegiatan}', [\App\Http\Controllers\ActivityController::class, 'destroy'])->name('kegiatan.destroy');
+    Route::post('/kegiatan/{kegiatan}/toggle-registration', [\App\Http\Controllers\ActivityController::class, 'toggleRegistration'])->name('kegiatan.toggleRegistration');
+    Route::get('/kegiatan/{kegiatan}/peserta', [\App\Http\Controllers\ActivityController::class, 'participants'])->name('kegiatan.peserta');
+
     Route::get('/kegiatan/{kegiatan}/tim', [\App\Http\Controllers\TeamController::class, 'show'])->name('tim.show');
     Route::post('/kegiatan/{kegiatan}/tim', [\App\Http\Controllers\TeamController::class, 'store'])->name('tim.store');
     Route::post('/tim/{recruitment}/apply', [\App\Http\Controllers\TeamController::class, 'apply'])->name('tim.apply');
     Route::patch('/aplikasi/{application}/status', [\App\Http\Controllers\TeamController::class, 'updateApplication'])->name('tim.application.update');
+    Route::patch('/tim/{recruitment}/close', [\App\Http\Controllers\TeamController::class, 'closeRecruitment'])->name('tim.close');
+    Route::delete('/aplikasi/{application}/remove', [\App\Http\Controllers\TeamController::class, 'removeMember'])->name('tim.removeMember');
+    Route::patch('/aplikasi/{application}/role', [\App\Http\Controllers\TeamController::class, 'updateMemberRole'])->name('tim.updateRole');
+
     Route::post('/notifikasi/{id}/read', [\App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifikasi.read');
     Route::post('/notifikasi/read-all', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifikasi.readAll');
+
+    Route::post('/kegiatan/{kegiatan}/pengumuman', [\App\Http\Controllers\AnnouncementController::class, 'store'])->name('pengumuman.store');
 });
 
 // CampLink frontend routes (Membutuhkan Login)
@@ -48,7 +61,7 @@ Route::middleware(['auth'])->group(function () {
                     'title' => $reg->activity->title,
                     'category' => $reg->activity->category ? $reg->activity->category->name : 'Umum',
                     'status' => $reg->activity->status === 'active' ? 'Aktif' : 'Selesai',
-                    'time' => \Carbon\Carbon::parse($reg->registered_at)->diffForHumans()
+                    'time' => \Carbon\Carbon::parse($reg->registered_at)->diffForHumans(),
                 ];
             });
 
@@ -70,11 +83,11 @@ Route::middleware(['auth'])->group(function () {
                     'achievements' => 0,
                 ],
                 'events' => $recentActivities,
-            ]
+            ],
         ]);
     })->name('profil.index');
-    Route::get('/pengaturan', fn() => Inertia::render('profil/index'))->name('pengaturan.index');
+    Route::get('/pengaturan', fn () => Inertia::render('profil/index'))->name('pengaturan.index');
 });
 
-require __DIR__ . '/settings.php';
-require __DIR__ . '/auth.php';
+require __DIR__.'/settings.php';
+require __DIR__.'/auth.php';
