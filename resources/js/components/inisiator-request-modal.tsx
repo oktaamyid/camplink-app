@@ -12,7 +12,14 @@ export function InisiatorRequestModal() {
     const { auth } = usePage<SharedData>().props;
     const [open, setOpen] = useState(false);
     
-    const existingRequest = auth.user?.inisiator_request;
+    type InisiatorRequest = {
+        status: 'pending' | 'approved' | 'rejected';
+        admin_notes?: string;
+        proposal_path: string;
+        ktm_path: string;
+    };
+    
+    const existingRequest = auth.user?.inisiator_request as InisiatorRequest | undefined;
     const alreadyHasRole = auth.user?.role === 'inisiator' || auth.user?.role === 'admin';
 
     const { setData, post, processing, errors, reset } = useForm({
@@ -42,7 +49,7 @@ export function InisiatorRequestModal() {
                     {buttonText}
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+            <DialogContent className="sm:max-w-150 max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle className="text-2xl font-bold text-[#2F3E8F]">
                         {existingRequest ? 'Status Pengajuan Inisiator' : 'Jadi Inisiator Kegiatan'}

@@ -100,11 +100,11 @@ export default function Beranda({ recommendedEvents, recentEvents }: BerandaProp
                                 </h3>
                                 <div className="space-y-1">
                                     <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-slate-400">
-                                        <MapPin className="size-3 flex-shrink-0" />
+                                        <MapPin className="size-3 shrink-0" />
                                         <span>{event.location}</span>
                                     </div>
                                     <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-slate-400">
-                                        <Calendar className="size-3 flex-shrink-0" />
+                                        <Calendar className="size-3 shrink-0" />
                                         <span>{formatDate(event.event_date)}</span>
                                     </div>
                                 </div>
@@ -133,17 +133,17 @@ export default function Beranda({ recommendedEvents, recentEvents }: BerandaProp
                                 index !== recentEvents.length - 1 ? 'border-b border-gray-100 dark:border-slate-800/60' : ''
                             }`}
                         >
-                            <div className="flex size-8 flex-shrink-0 items-center justify-center rounded-lg bg-gray-100 dark:bg-slate-800">
+                            <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-gray-100 dark:bg-slate-800">
                                 <Clock className="size-4 text-gray-400 dark:text-slate-500" />
                             </div>
                             <div className="flex-1 min-w-0">
                                 <p className="text-sm font-medium text-gray-900 dark:text-slate-200 truncate">{event.title}</p>
                             </div>
                             <CategoryBadge category={event.category.name} />
-                            <span className="text-xs text-gray-400 dark:text-slate-500 flex-shrink-0">{formatDate(event.event_date)}</span>
-                            <span className="text-xs text-gray-400 dark:text-slate-500 flex-shrink-0 hidden md:block">{event.location}</span>
+                            <span className="text-xs text-gray-400 dark:text-slate-500 shrink-0">{formatDate(event.event_date)}</span>
+                            <span className="text-xs text-gray-400 dark:text-slate-500 shrink-0 hidden md:block">{event.location}</span>
                             <button
-                                className="flex-shrink-0 rounded p-1 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+                                className="shrink-0 rounded p-1 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
                                 onClick={(e) => {
                                     e.preventDefault();
                                 }}

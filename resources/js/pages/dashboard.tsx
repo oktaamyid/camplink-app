@@ -998,7 +998,7 @@ export default function Dashboard({ isAdmin, stats }: Props) {
                                                     <div className="flex items-center justify-between border-t border-gray-100 pt-3 mt-auto">
                                                         <div className="flex flex-col">
                                                             <span className="text-[10px] font-bold text-gray-900">{rev.user.name}</span>
-                                                            <span className="text-[9px] text-gray-500 truncate max-w-[150px]">{rev.activity.title}</span>
+                                                            <span className="text-[9px] text-gray-500 truncate max-w-37.5">{rev.activity.title}</span>
                                                         </div>
                                                         <span className="text-[9px] text-gray-400">
                                                             {new Date(rev.created_at).toLocaleDateString('id-ID')}
@@ -1133,7 +1133,7 @@ export default function Dashboard({ isAdmin, stats }: Props) {
                                             <Star className="size-10 text-[#2F3E8F]/20" />
                                         </div>
                                         <h3 className="text-sm font-bold text-gray-900 mb-1">Cari Kegiatan Lain?</h3>
-                                        <p className="text-xs text-gray-500 mb-6 max-w-[200px]">Temukan ratusan kegiatan menarik lainnya di halaman Eksplorasi.</p>
+                                        <p className="text-xs text-gray-500 mb-6 max-w-50">Temukan ratusan kegiatan menarik lainnya di halaman Eksplorasi.</p>
                                         <Link 
                                             href="/kegiatan"
                                             className="inline-flex items-center gap-2 rounded-xl bg-[#2F3E8F] px-6 py-2.5 text-xs font-bold text-white hover:bg-[#243070] transition-all shadow-md active:scale-95"
