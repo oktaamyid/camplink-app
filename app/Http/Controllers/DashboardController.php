@@ -73,7 +73,7 @@ class DashboardController extends Controller
                         return [
                             'id' => $app->id,
                             'type' => 'team_application',
-                            'title' => 'Melamar tim: '.($app->recruitment->activity->title ?? 'Kegiatan'),
+                            'title' => 'Melamar tim: ' . ($app->recruitment->activity->title ?? 'Kegiatan'),
                             'status' => $app->status,
                             'time' => $app->applied_at->diffForHumans(),
                         ];
@@ -89,7 +89,7 @@ class DashboardController extends Controller
                         return [
                             'id' => $reg->id,
                             'type' => 'event_registration',
-                            'title' => 'Mendaftar kegiatan: '.($reg->activity->title ?? 'Kegiatan'),
+                            'title' => 'Mendaftar kegiatan: ' . ($reg->activity->title ?? 'Kegiatan'),
                             'status' => 'registered',
                             'time' => $reg->registered_at->diffForHumans(),
                         ];
@@ -188,7 +188,7 @@ class DashboardController extends Controller
     public function updateCategory(Request $request, Category $category): RedirectResponse
     {
         $request->validate([
-            'name' => 'required|string|max:100|unique:categories,name,'.$category->id,
+            'name' => 'required|string|max:100|unique:categories,name,' . $category->id,
         ]);
 
         $category->update($request->only('name'));

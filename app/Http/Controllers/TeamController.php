@@ -40,10 +40,10 @@ class TeamController extends Controller
         ]);
     }
 
-    public function show(Activity $kegiatan): Response
+    public function show(Activity $activity): Response
     {
         $activity = Activity::with(['creator', 'recruitment.applications.applicant', 'teamLeader'])
-            ->findOrFail($kegiatan->id);
+            ->findOrFail($activity->id);
 
         return Inertia::render('tim/index', [
             'activity' => $activity,
@@ -51,10 +51,10 @@ class TeamController extends Controller
         ]);
     }
 
-    public function store(Request $request, Activity $kegiatan): RedirectResponse
+    public function store(Request $request, Activity $activity): RedirectResponse
     {
         // Only creator can open recruitment
-        if ($kegiatan->creator_id !== $request->user()->id) {
+        if ($activity->creator_id !== $request->user()->id) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -66,7 +66,7 @@ class TeamController extends Controller
             'total_slots' => 'required|integer|min:1',
         ]);
 
-        $kegiatan->recruitment()->create([
+        $activity->recruitment()->create([
             'description' => $validated['description'],
             'skills_required' => $validated['skills_required'],
             'total_slots' => $validated['total_slots'],

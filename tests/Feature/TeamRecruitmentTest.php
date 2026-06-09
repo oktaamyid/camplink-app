@@ -10,6 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 it('allows event creator to open team recruitment', function () {
+    /** @var \Tests\TestCase $this */
     $creator = User::factory()->create();
     $category = Category::create(['name' => 'Lomba', 'slug' => 'lomba']);
 
@@ -40,6 +41,7 @@ it('allows event creator to open team recruitment', function () {
 });
 
 it('allows another user to apply to recruitment', function () {
+    /** @var \Tests\TestCase $this */
     $creator = User::factory()->create();
     $applicant = User::factory()->create();
     $category = Category::create(['name' => 'Lomba', 'slug' => 'lomba']);
@@ -76,6 +78,7 @@ it('allows another user to apply to recruitment', function () {
 });
 
 it('allows creator to accept application', function () {
+    /** @var \Tests\TestCase $this */
     $creator = User::factory()->create();
     $applicant = User::factory()->create();
     $category = Category::create(['name' => 'Lomba', 'slug' => 'lomba']);

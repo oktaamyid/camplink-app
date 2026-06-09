@@ -327,18 +327,6 @@ export default function Dashboard({ isAdmin, stats }: Props) {
                                 </Card>
                                 <Card>
                                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-sm font-medium text-gray-700">Total Kegiatan</CardTitle>
-                                        <Activity className="size-4 text-gray-400" />
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="text-2xl font-bold text-gray-900">{stats.totalActivities}</div>
-                                        <p className="text-xs text-gray-500 mt-1">
-                                            Kegiatan kampus terposting
-                                        </p>
-                                    </CardContent>
-                                </Card>
-                                <Card>
-                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                         <CardTitle className="text-sm font-medium text-gray-700">Kegiatan Aktif</CardTitle>
                                         <CheckCircle2 className="size-4 text-green-500" />
                                     </CardHeader>

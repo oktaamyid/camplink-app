@@ -93,12 +93,10 @@ class ActivityController extends Controller
         ]);
     }
 
-    public function create(): Response
+    public function create()
     {
         if (! auth()->user()->isAdmin() && ! auth()->user()->isInisiator()) {
-            return Inertia::render('inisiator/request', [
-                'error' => 'Anda harus menjadi inisiator untuk membuat kegiatan.',
-            ]);
+            return redirect()->route('kegiatan.index')->with('error', 'Anda harus menjadi inisiator untuk membuat kegiatan.');
         }
 
         $categories = Category::all();
