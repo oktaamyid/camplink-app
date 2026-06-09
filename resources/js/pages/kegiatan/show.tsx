@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import CampLinkLayout from '@/layouts/camplink-layout';
 import { Head, Link, usePage, useForm, router } from '@inertiajs/react';
-import { ArrowLeft, MapPin, Calendar, Clock, Mail, Users, Plus, Trash2, X, MessageSquare, CheckCircle2, Bookmark, Star, ShieldCheck, Edit, Award, Download, Flag } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, Clock, Mail, Users, Plus, Trash2, X, MessageSquare, CheckCircle2, Bookmark, Star, Edit, Award, Download, Flag } from 'lucide-react';
 import { useState, FormEventHandler } from 'react';
 
 interface Category {

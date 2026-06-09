@@ -60,6 +60,8 @@ export default function Tim({ activity, recruitment }: Props) {
     const isCreator = currentUser?.id === activity.creator_id;
 
     const [processing, setProcessing] = useState(false);
+    const [isLeaderDialogOpen, setIsLeaderDialogOpen] = useState(false);
+    const [selectedLeader, setSelectedLeader] = useState<number | null>(null);
 
     const handleUpdateStatus = (applicationId: number, status: 'accepted' | 'rejected') => {
         if (!confirm(`Apakah Anda yakin ingin ${status === 'accepted' ? 'menerima' : 'menolak'} kandidat ini?`)) {
@@ -104,8 +106,7 @@ export default function Tim({ activity, recruitment }: Props) {
     // Determine if creator is currently the leader
     const inisiatorIsLeader = !activity.team_leader_id || activity.team_leader_id === activity.creator_id;
 
-    const [isLeaderDialogOpen, setIsLeaderDialogOpen] = useState(false);
-    const [selectedLeader, setSelectedLeader] = useState<number | null>(null);
+
 
     const handleSetLeader = (userId: number) => {
         setSelectedLeader(userId);

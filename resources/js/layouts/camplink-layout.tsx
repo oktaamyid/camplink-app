@@ -25,7 +25,6 @@ import {
     BookOpen,
     Home,
     LayoutDashboard,
-    LogOut,
     MessageSquare,
     Search,
     Settings,
@@ -33,7 +32,6 @@ import {
     Users,
     Power,
     Bookmark,
-    ChevronDown,
     ChevronUp,
     ShieldAlert,
     Megaphone
@@ -62,7 +60,12 @@ export default function CampLinkLayout({ children }: CampLinkLayoutProps) {
     const { auth } = page.props;
     const [searchQuery, setSearchQuery] = useState('');
 
-    const notifications = (auth?.user?.notifications as Record<string, unknown>[]) || [];
+    type NotificationItem = {
+        id: string;
+        created_at: string;
+        data?: { action_url?: string; message?: string };
+    };
+    const notifications = (auth?.user?.notifications as NotificationItem[]) || [];
     const unreadCount = (auth?.user?.unread_notifications_count as number) || 0;
     const unreadMessagesCount = (auth?.user?.unread_messages_count as number) || 0;
     const pendingInisiatorsCount = (auth?.user?.pending_inisiators_count as number) || 0;
@@ -297,7 +300,7 @@ export default function CampLinkLayout({ children }: CampLinkLayoutProps) {
                                                     Tidak ada notifikasi
                                                 </div>
                                             ) : (
-                                                notifications.map((notif: any) => (
+                                                notifications.map((notif) => (
                                                     <DropdownMenuItem 
                                                         key={notif.id} 
                                                         className="rounded-lg px-3 py-2 focus:bg-[#F8F9FB] dark:focus:bg-slate-800 cursor-pointer" 

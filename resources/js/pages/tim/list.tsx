@@ -7,7 +7,7 @@ interface TeamRecruitment {
     id: number;
     activity_id: number;
     description: string;
-    skills_required: any;
+    skills_required: any /* eslint-disable-line @typescript-eslint/no-explicit-any */;
     total_slots: number;
     filled_slots: number;
     status: string;

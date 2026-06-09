@@ -1,6 +1,5 @@
 import { useForm, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -16,7 +15,7 @@ export function InisiatorRequestModal() {
     const existingRequest = auth.user?.inisiator_request;
     const alreadyHasRole = auth.user?.role === 'inisiator' || auth.user?.role === 'admin';
 
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const { setData, post, processing, errors, reset } = useForm({
         proposal: null as File | null,
         ktm: null as File | null,
     });

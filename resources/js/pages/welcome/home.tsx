@@ -3,14 +3,12 @@ import { type SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import {
-    Activity,
     ArrowRight,
     Award,
     Bell,
     Calendar,
     Compass,
     Folder,
-    GraduationCap,
     LayoutGrid,
     Lightbulb,
     MapPin,

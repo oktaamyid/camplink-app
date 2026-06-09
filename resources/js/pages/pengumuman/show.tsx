@@ -1,6 +1,6 @@
 import CampLinkLayout from '@/layouts/camplink-layout';
 import { Head, Link } from '@inertiajs/react';
-import { Calendar, User, ArrowLeft, Share2, Printer } from 'lucide-react';
+import { Calendar, ArrowLeft, Share2, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface Announcement {

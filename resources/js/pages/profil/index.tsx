@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import CampLinkLayout from '@/layouts/camplink-layout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Edit3, MapPin, Mail, Globe, Github, Linkedin, Instagram, Plus, Bookmark, X, Check, Briefcase, GraduationCap, Award, Trash2, Calendar, MessageSquare, PlusCircle } from 'lucide-react';
@@ -98,7 +100,7 @@ export default function Profil({ profileData }: { profileData: any }) {
     };
 
     const handleSaveExperience = () => {
-        let updated = [...profile.experience];
+        const updated = [...profile.experience];
         const item = { title: expTitle, company: expCompany, duration: expDuration, description: expDescription };
         if (expIndex !== null) {
             updated[expIndex] = item;
@@ -113,7 +115,7 @@ export default function Profil({ profileData }: { profileData: any }) {
 
     const handleDeleteExperience = (idx: number) => {
         if (!confirm('Apakah Anda yakin ingin menghapus pengalaman ini?')) return;
-        const updated = profile.experience.filter((_, i) => i !== idx);
+        const updated = profile.experience.filter((  ) => i !== idx);
         router.patch(route('profile.update'), { experience: updated }, { preserveScroll: true });
     };
 
@@ -136,7 +138,7 @@ export default function Profil({ profileData }: { profileData: any }) {
     };
 
     const handleSaveEducation = () => {
-        let updated = [...profile.education];
+        const updated = [...profile.education];
         const item = { school: eduSchool, degree: eduDegree, field_of_study: eduField, duration: eduDuration };
         if (eduIndex !== null) {
             updated[eduIndex] = item;
@@ -151,7 +153,7 @@ export default function Profil({ profileData }: { profileData: any }) {
 
     const handleDeleteEducation = (idx: number) => {
         if (!confirm('Apakah Anda yakin ingin menghapus pendidikan ini?')) return;
-        const updated = profile.education.filter((_, i) => i !== idx);
+        const updated = profile.education.filter((  ) => i !== idx);
         router.patch(route('profile.update'), { education: updated }, { preserveScroll: true });
     };
 
@@ -176,7 +178,7 @@ export default function Profil({ profileData }: { profileData: any }) {
     };
 
     const handleSaveCertificate = () => {
-        let updated = [...profile.external_certificates];
+        const updated = [...profile.external_certificates];
         const item = { name: certName, issuing_organization: certIssuer, issue_date: certDate, credential_id: certId, credential_url: certUrl };
         if (certIndex !== null) {
             updated[certIndex] = item;
@@ -191,7 +193,7 @@ export default function Profil({ profileData }: { profileData: any }) {
 
     const handleDeleteCertificate = (idx: number) => {
         if (!confirm('Apakah Anda yakin ingin menghapus sertifikat ini?')) return;
-        const updated = profile.external_certificates.filter((_, i) => i !== idx);
+        const updated = profile.external_certificates.filter((  ) => i !== idx);
         router.patch(route('profile.update'), { external_certificates: updated }, { preserveScroll: true });
     };
 
@@ -240,7 +242,7 @@ export default function Profil({ profileData }: { profileData: any }) {
 
                         {/* Social links */}
                         <div className="mt-4 flex items-center gap-2">
-                            {[Globe, Github, Linkedin, Instagram].map((Icon, i) => (
+                            {[Globe, Github, Linkedin, Instagram].map((  ) => (
                                 <button
                                     key={i}
                                     className="flex size-8 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-[#2F3E8F] hover:text-[#2F3E8F] transition-colors"
@@ -371,7 +373,7 @@ export default function Profil({ profileData }: { profileData: any }) {
                             <span className="text-xs text-gray-500">{profile.events?.length || 0} kegiatan terakhir</span>
                         </div>
                         <div className="space-y-3">
-                            {profile.events && profile.events.length > 0 ? profile.events.map((event: any, i: number) => {
+                            {profile.events && profile.events.length > 0 ? profile.events.map((event: any  , i: number) => {
                                 const colors = categoryColors[event.category] ?? { bg: 'bg-gray-100', text: 'text-gray-600' };
                                 return (
                                     <div
@@ -567,7 +569,7 @@ export default function Profil({ profileData }: { profileData: any }) {
                     <div className="rounded-xl border border-gray-200 bg-white p-5">
                         <h2 className="mb-4 text-sm font-semibold text-gray-900">Aktivitas Terbaru</h2>
                         <div className="space-y-4">
-                            {profile.events && profile.events.length > 0 ? profile.events.map((event: any, i: number) => (
+                            {profile.events && profile.events.length > 0 ? profile.events.map((event: any  , i: number) => (
                                 <div key={i} className="flex items-start gap-3">
                                     <div className="mt-1.5 size-1.5 flex-shrink-0 rounded-full bg-[#2F3E8F]" />
                                     <div>

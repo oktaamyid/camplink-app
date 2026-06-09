@@ -1,6 +1,6 @@
 import CampLinkLayout from '@/layouts/camplink-layout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, Upload, Bold, Italic, Underline, List, ListOrdered, AlignLeft, Link2, ChevronDown, Users, UserCheck } from 'lucide-react';
+import { ArrowLeft, Upload,  ChevronDown, Users, UserCheck } from 'lucide-react';
 
 interface Category {
     id: number;
