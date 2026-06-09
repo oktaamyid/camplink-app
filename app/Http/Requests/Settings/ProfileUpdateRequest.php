@@ -34,6 +34,9 @@ class ProfileUpdateRequest extends FormRequest
             'location' => ['nullable', 'string', 'max:255'],
             'skills' => ['nullable', 'string'],
             'interests' => ['nullable', 'string'],
+            'experience' => ['nullable', 'array'],
+            'education' => ['nullable', 'array'],
+            'external_certificates' => ['nullable', 'array'],
         ];
     }
 }

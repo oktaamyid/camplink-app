@@ -3,37 +3,40 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Notification extends Model
 {
-    const UPDATED_AT = null;
+    protected $keyType = 'string';
+
+    public $incrementing = false;
 
     protected $fillable = [
-        'user_id',
-        'title',
-        'message',
+        'id',
         'type',
-        'reference_id',
-        'reference_type',
-        'is_read',
+        'notifiable_type',
+        'notifiable_id',
+        'data',
+        'read_at',
     ];
 
     protected function casts(): array
     {
         return [
-            'is_read' => 'boolean',
+            'data' => 'array',
+            'read_at' => 'datetime',
         ];
     }
 
-    public function user(): BelongsTo
+    public function notifiable(): MorphTo
     {
-        return $this->belongsTo(User::class);
+        return $this->morphTo();
     }
 
-    public function reference(): MorphTo
+    public function markAsRead(): void
     {
-        return $this->morphTo(__FUNCTION__, 'reference_type', 'reference_id');
+        if (is_null($this->read_at)) {
+            $this->forceFill(['read_at' => $this->freshTimestamp()])->save();
+        }
     }
 }

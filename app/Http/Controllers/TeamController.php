@@ -11,7 +11,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Support\Facades\Gate;
 
 class TeamController extends Controller
 {
@@ -22,10 +21,10 @@ class TeamController extends Controller
             ->with([
                 'recruitment' => function ($query) {
                     $query->withCount([
-                        'applications as pending_count' => fn($q) => $q->where('status', 'pending'),
-                        'applications as accepted_count' => fn($q) => $q->where('status', 'accepted')
+                        'applications as pending_count' => fn ($q) => $q->where('status', 'pending'),
+                        'applications as accepted_count' => fn ($q) => $q->where('status', 'accepted'),
                     ]);
-                }
+                },
             ])
             ->latest()
             ->get();
@@ -43,12 +42,12 @@ class TeamController extends Controller
 
     public function show(Activity $kegiatan): Response
     {
-        // Load the recruitment and applications if exists
-        $kegiatan->load('recruitment.applications.applicant');
+        $activity = Activity::with(['creator', 'recruitment.applications.applicant', 'teamLeader'])
+            ->findOrFail($kegiatan->id);
 
         return Inertia::render('tim/index', [
-            'activity' => $kegiatan,
-            'recruitment' => $kegiatan->recruitment,
+            'activity' => $activity,
+            'recruitment' => $activity->recruitment,
         ]);
     }
 
@@ -138,6 +137,9 @@ class TeamController extends Controller
 
         // Notify applicant
         $application->applicant->notify(new TeamApplicationUpdated($application));
+
+        // Reload activity to ensure props are updated
+        $application->recruitment->activity->load(['creator', 'teamLeader']);
 
         return redirect()->back()->with('success', 'Status lamaran berhasil diperbarui.');
     }

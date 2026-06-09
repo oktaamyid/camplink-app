@@ -12,14 +12,22 @@ class Activity extends Model
     protected $fillable = [
         'title',
         'description',
+        'requirements',
         'category_id',
         'creator_id',
         'location',
+        'is_online',
+        'meeting_link',
         'event_date',
         'deadline_date',
+        'quota',
+        'contact',
         'poster_url',
         'status',
         'is_team_based',
+        'has_participants',
+        'is_verified',
+        'team_leader_id',
     ];
 
     protected function casts(): array
@@ -28,6 +36,10 @@ class Activity extends Model
             'event_date' => 'date',
             'deadline_date' => 'date',
             'is_team_based' => 'boolean',
+            'has_participants' => 'boolean',
+            'is_verified' => 'boolean',
+            'is_online' => 'boolean',
+            'quota' => 'integer',
         ];
     }
 
@@ -41,6 +53,11 @@ class Activity extends Model
         return $this->belongsTo(User::class, 'creator_id');
     }
 
+    public function teamLeader(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'team_leader_id');
+    }
+
     public function registrations(): HasMany
     {
         return $this->hasMany(ActivityRegistration::class);
@@ -49,5 +66,25 @@ class Activity extends Model
     public function recruitment(): HasOne
     {
         return $this->hasOne(TeamRecruitment::class);
+    }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(ActivityReview::class);
+    }
+
+    public function reports(): HasMany
+    {
+        return $this->hasMany(ActivityReport::class);
+    }
+
+    public function bookmarks(): HasMany
+    {
+        return $this->hasMany(Bookmark::class);
+    }
+
+    public function certificates(): HasMany
+    {
+        return $this->hasMany(Certificate::class);
     }
 }

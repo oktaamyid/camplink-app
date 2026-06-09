@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -25,7 +26,7 @@ return new class extends Migration
             $table->index('status');
             $table->index('category_id');
             $table->index('creator_id');
-            if (config('database.default') !== 'sqlite' && config('database.connections.'.config('database.default').'.driver') !== 'sqlite' && \Illuminate\Support\Facades\DB::connection()->getDriverName() !== 'sqlite') {
+            if (config('database.default') !== 'sqlite' && config('database.connections.'.config('database.default').'.driver') !== 'sqlite' && DB::connection()->getDriverName() !== 'sqlite') {
                 $table->fullText(['title', 'description']);
             }
         });

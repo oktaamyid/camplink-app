@@ -34,10 +34,11 @@ export default function Register() {
     return (
         <AuthLayout title="Buat Akun Baru" description="Masukkan detail Anda di bawah ini untuk mendaftar">
             <Head title="Daftar" />
-            <form className="flex flex-col gap-6" onSubmit={submit}>
-                <div className="grid gap-6">
+            
+            <form className="flex flex-col gap-5" onSubmit={submit}>
+                <div className="grid gap-5">
                     <div className="grid gap-2">
-                        <Label htmlFor="name">Nama Lengkap</Label>
+                        <Label htmlFor="name" className="font-semibold text-xs tracking-wider uppercase text-gray-500 dark:text-slate-400">Nama Lengkap</Label>
                         <Input
                             id="name"
                             type="text"
@@ -48,13 +49,14 @@ export default function Register() {
                             value={data.name}
                             onChange={(e) => setData('name', e.target.value)}
                             disabled={processing}
-                            placeholder="Nama Panggilan / Lengkap"
+                            placeholder="Nama Lengkap Anda"
+                            className="rounded-xl border-gray-200 dark:border-slate-800 bg-[#F8F9FB] dark:bg-slate-900/50 focus-visible:ring-indigo-500/20 dark:focus-visible:ring-indigo-500/10 focus-visible:border-indigo-500 transition-all duration-200 h-11 px-4"
                         />
-                        <InputError message={errors.name} className="mt-2" />
+                        <InputError message={errors.name} />
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="email">Alamat Email</Label>
+                        <Label htmlFor="email" className="font-semibold text-xs tracking-wider uppercase text-gray-500 dark:text-slate-400">Alamat Email</Label>
                         <Input
                             id="email"
                             type="email"
@@ -64,13 +66,14 @@ export default function Register() {
                             value={data.email}
                             onChange={(e) => setData('email', e.target.value)}
                             disabled={processing}
-                            placeholder="email@contoh.com"
+                            placeholder="nama@email.com"
+                            className="rounded-xl border-gray-200 dark:border-slate-800 bg-[#F8F9FB] dark:bg-slate-900/50 focus-visible:ring-indigo-500/20 dark:focus-visible:ring-indigo-500/10 focus-visible:border-indigo-500 transition-all duration-200 h-11 px-4"
                         />
                         <InputError message={errors.email} />
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="password">Kata Sandi</Label>
+                        <Label htmlFor="password" className="font-semibold text-xs tracking-wider uppercase text-gray-500 dark:text-slate-400">Kata Sandi</Label>
                         <Input
                             id="password"
                             type="password"
@@ -80,13 +83,14 @@ export default function Register() {
                             value={data.password}
                             onChange={(e) => setData('password', e.target.value)}
                             disabled={processing}
-                            placeholder="Kata Sandi"
+                            placeholder="Buat kata sandi minimal 8 karakter"
+                            className="rounded-xl border-gray-200 dark:border-slate-800 bg-[#F8F9FB] dark:bg-slate-900/50 focus-visible:ring-indigo-500/20 dark:focus-visible:ring-indigo-500/10 focus-visible:border-indigo-500 transition-all duration-200 h-11 px-4"
                         />
                         <InputError message={errors.password} />
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="password_confirmation">Konfirmasi Kata Sandi</Label>
+                        <Label htmlFor="password_confirmation" className="font-semibold text-xs tracking-wider uppercase text-gray-500 dark:text-slate-400">Konfirmasi Kata Sandi</Label>
                         <Input
                             id="password_confirmation"
                             type="password"
@@ -96,21 +100,22 @@ export default function Register() {
                             value={data.password_confirmation}
                             onChange={(e) => setData('password_confirmation', e.target.value)}
                             disabled={processing}
-                            placeholder="Ketik ulang kata sandi"
+                            placeholder="Ulangi kata sandi Anda"
+                            className="rounded-xl border-gray-200 dark:border-slate-800 bg-[#F8F9FB] dark:bg-slate-900/50 focus-visible:ring-indigo-500/20 dark:focus-visible:ring-indigo-500/10 focus-visible:border-indigo-500 transition-all duration-200 h-11 px-4"
                         />
                         <InputError message={errors.password_confirmation} />
                     </div>
 
-                    <Button type="submit" className="mt-2 w-full" tabIndex={5} disabled={processing}>
-                        {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                        Daftar Akun
+                    <Button type="submit" className="mt-2 w-full h-11 rounded-xl bg-[#2F3E8F] dark:bg-indigo-600 hover:bg-[#233075] dark:hover:bg-indigo-500 text-white font-bold shadow-md hover:shadow-indigo-500/10 transition-all duration-200 active:scale-[0.98] border-none" tabIndex={5} disabled={processing}>
+                        {processing && <LoaderCircle className="h-4 w-4 animate-spin mr-2" />}
+                        Daftar Akun Baru
                     </Button>
                 </div>
 
-                <div className="text-center text-sm text-muted-foreground">
+                <div className="text-center text-sm text-gray-500 dark:text-slate-400 mt-4">
                     Sudah punya akun?{' '}
-                    <TextLink href={route('login')} tabIndex={6}>
-                        Masuk
+                    <TextLink href={route('login')} className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 font-bold ml-1" tabIndex={6}>
+                        Masuk di sini
                     </TextLink>
                 </div>
             </form>

@@ -23,11 +23,11 @@ interface BerandaProps extends SharedData {
 }
 
 const categoryColors: Record<string, { bg: string; text: string }> = {
-    Lomba: { bg: 'bg-blue-50', text: 'text-blue-700' },
-    Seminar: { bg: 'bg-purple-50', text: 'text-purple-700' },
-    Workshop: { bg: 'bg-orange-50', text: 'text-orange-700' },
-    Penelitian: { bg: 'bg-green-50', text: 'text-green-700' },
-    Proyek: { bg: 'bg-rose-50', text: 'text-rose-700' },
+    Lomba: { bg: 'bg-blue-50 dark:bg-blue-950/40', text: 'text-blue-700 dark:text-blue-400' },
+    Seminar: { bg: 'bg-purple-50 dark:bg-purple-950/40', text: 'text-purple-700 dark:text-purple-400' },
+    Workshop: { bg: 'bg-orange-50 dark:bg-orange-950/40', text: 'text-orange-700 dark:text-orange-400' },
+    Penelitian: { bg: 'bg-green-50 dark:bg-green-950/40', text: 'text-green-700 dark:text-green-400' },
+    Proyek: { bg: 'bg-rose-50 dark:bg-rose-950/40', text: 'text-rose-700 dark:text-rose-400' },
 };
 
 function CategoryBadge({ category }: { category: string }) {
@@ -59,10 +59,10 @@ export default function Beranda({ recommendedEvents, recentEvents }: BerandaProp
 
             {/* Welcome section */}
             <div className="mb-6">
-                <h1 className="text-xl font-semibold text-gray-900">
+                <h1 className="text-xl font-semibold text-gray-900 dark:text-slate-100">
                     Hai, {auth?.user?.name || 'Mahasiswa'}! 👋
                 </h1>
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
                     Temukan kegiatan menarik dan bangun kolaborasi bersama mahasiswa lainnya.
                 </p>
             </div>
@@ -70,8 +70,8 @@ export default function Beranda({ recommendedEvents, recentEvents }: BerandaProp
             {/* Recommended Events */}
             <section className="mb-8">
                 <div className="mb-3 flex items-center justify-between">
-                    <h2 className="text-sm font-semibold text-gray-900">Rekomendasi Kegiatan</h2>
-                    <Link href="/kegiatan" className="flex items-center gap-1 text-xs font-medium text-[#2F3E8F] hover:underline">
+                    <h2 className="text-sm font-semibold text-gray-900 dark:text-slate-100">Rekomendasi Kegiatan</h2>
+                    <Link href="/kegiatan" className="flex items-center gap-1 text-xs font-medium text-[#2F3E8F] dark:text-indigo-400 hover:underline">
                         Lihat semua
                         <ChevronRight className="size-3" />
                     </Link>
@@ -82,7 +82,7 @@ export default function Beranda({ recommendedEvents, recentEvents }: BerandaProp
                         <Link
                             key={event.id}
                             href={`/kegiatan/${event.id}`}
-                            className="group overflow-hidden rounded-xl border border-gray-200 bg-white transition-shadow hover:shadow-md"
+                            className="group overflow-hidden rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-[#111625] transition-shadow hover:shadow-md"
                         >
                             <div className="relative overflow-hidden">
                                 <img
@@ -95,15 +95,15 @@ export default function Beranda({ recommendedEvents, recentEvents }: BerandaProp
                                 </div>
                             </div>
                             <div className="p-3">
-                                <h3 className="mb-2 text-xs font-semibold leading-snug text-gray-900 line-clamp-2">
+                                <h3 className="mb-2 text-xs font-semibold leading-snug text-gray-900 dark:text-slate-100 line-clamp-2">
                                     {event.title}
                                 </h3>
                                 <div className="space-y-1">
-                                    <div className="flex items-center gap-1 text-xs text-gray-500">
+                                    <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-slate-400">
                                         <MapPin className="size-3 flex-shrink-0" />
                                         <span>{event.location}</span>
                                     </div>
-                                    <div className="flex items-center gap-1 text-xs text-gray-500">
+                                    <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-slate-400">
                                         <Calendar className="size-3 flex-shrink-0" />
                                         <span>{formatDate(event.event_date)}</span>
                                     </div>
@@ -117,38 +117,38 @@ export default function Beranda({ recommendedEvents, recentEvents }: BerandaProp
             {/* Recent Events */}
             <section>
                 <div className="mb-3 flex items-center justify-between">
-                    <h2 className="text-sm font-semibold text-gray-900">Kegiatan Terbaru</h2>
-                    <Link href="/kegiatan" className="flex items-center gap-1 text-xs font-medium text-[#2F3E8F] hover:underline">
+                    <h2 className="text-sm font-semibold text-gray-900 dark:text-slate-100">Kegiatan Terbaru</h2>
+                    <Link href="/kegiatan" className="flex items-center gap-1 text-xs font-medium text-[#2F3E8F] dark:text-indigo-400 hover:underline">
                         Lihat semua
                         <ChevronRight className="size-3" />
                     </Link>
                 </div>
 
-                <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+                <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-[#111625]">
                     {recentEvents.map((event, index) => (
                         <Link
                             key={event.id}
                             href={`/kegiatan/${event.id}`}
-                            className={`flex items-center gap-4 px-4 py-3.5 hover:bg-gray-50 transition-colors ${
-                                index !== recentEvents.length - 1 ? 'border-b border-gray-100' : ''
+                            className={`flex items-center gap-4 px-4 py-3.5 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors ${
+                                index !== recentEvents.length - 1 ? 'border-b border-gray-100 dark:border-slate-800/60' : ''
                             }`}
                         >
-                            <div className="flex size-8 flex-shrink-0 items-center justify-center rounded-lg bg-gray-100">
-                                <Clock className="size-4 text-gray-400" />
+                            <div className="flex size-8 flex-shrink-0 items-center justify-center rounded-lg bg-gray-100 dark:bg-slate-800">
+                                <Clock className="size-4 text-gray-400 dark:text-slate-500" />
                             </div>
                             <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-gray-900 truncate">{event.title}</p>
+                                <p className="text-sm font-medium text-gray-900 dark:text-slate-200 truncate">{event.title}</p>
                             </div>
                             <CategoryBadge category={event.category.name} />
-                            <span className="text-xs text-gray-400 flex-shrink-0">{formatDate(event.event_date)}</span>
-                            <span className="text-xs text-gray-400 flex-shrink-0 hidden md:block">{event.location}</span>
+                            <span className="text-xs text-gray-400 dark:text-slate-500 flex-shrink-0">{formatDate(event.event_date)}</span>
+                            <span className="text-xs text-gray-400 dark:text-slate-500 flex-shrink-0 hidden md:block">{event.location}</span>
                             <button
-                                className="flex-shrink-0 rounded p-1 hover:bg-gray-100 transition-colors"
+                                className="flex-shrink-0 rounded p-1 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
                                 onClick={(e) => {
                                     e.preventDefault();
                                 }}
                             >
-                                <Bookmark className="size-4 text-gray-400" />
+                                <Bookmark className="size-4 text-gray-400 dark:text-slate-500" />
                             </button>
                         </Link>
                     ))}

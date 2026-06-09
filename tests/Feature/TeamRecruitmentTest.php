@@ -12,7 +12,7 @@ uses(RefreshDatabase::class);
 it('allows event creator to open team recruitment', function () {
     $creator = User::factory()->create();
     $category = Category::create(['name' => 'Lomba', 'slug' => 'lomba']);
-    
+
     $activity = Activity::create([
         'title' => 'Lomba Startup',
         'description' => 'Test event',
@@ -32,7 +32,7 @@ it('allows event creator to open team recruitment', function () {
     ]);
 
     $response->assertSessionHas('success');
-    
+
     $this->assertDatabaseHas('team_recruitments', [
         'activity_id' => $activity->id,
         'total_slots' => 2,
@@ -43,7 +43,7 @@ it('allows another user to apply to recruitment', function () {
     $creator = User::factory()->create();
     $applicant = User::factory()->create();
     $category = Category::create(['name' => 'Lomba', 'slug' => 'lomba']);
-    
+
     $activity = Activity::create([
         'title' => 'Lomba Startup',
         'description' => 'Test event',
@@ -67,7 +67,7 @@ it('allows another user to apply to recruitment', function () {
     ]);
 
     $response->assertSessionHas('success');
-    
+
     $this->assertDatabaseHas('team_applications', [
         'recruitment_id' => $recruitment->id,
         'applicant_id' => $applicant->id,
@@ -79,7 +79,7 @@ it('allows creator to accept application', function () {
     $creator = User::factory()->create();
     $applicant = User::factory()->create();
     $category = Category::create(['name' => 'Lomba', 'slug' => 'lomba']);
-    
+
     $activity = Activity::create([
         'title' => 'Lomba Startup',
         'description' => 'Test event',
@@ -110,7 +110,7 @@ it('allows creator to accept application', function () {
     ]);
 
     $response->assertSessionHas('success');
-    
+
     $this->assertDatabaseHas('team_applications', [
         'id' => $application->id,
         'status' => 'accepted',

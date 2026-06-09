@@ -84,7 +84,7 @@ it('can display the activity detail page', function () {
         'status' => 'active',
     ]);
 
-    $response = $this->get(route('kegiatan.show', $activity));
+    $response = $this->actingAs($user)->get(route('kegiatan.show', $activity));
 
     $response->assertStatus(200);
 });

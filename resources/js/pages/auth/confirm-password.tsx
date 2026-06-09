@@ -1,4 +1,3 @@
-// Components
 import { Head, useForm } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
 import { FormEventHandler } from 'react';
@@ -24,35 +23,34 @@ export default function ConfirmPassword() {
 
     return (
         <AuthLayout
-            title="Confirm your password"
-            description="This is a secure area of the application. Please confirm your password before continuing."
+            title="Konfirmasi Kata Sandi"
+            description="Ini adalah area aman aplikasi. Harap konfirmasi kata sandi Anda terlebih dahulu sebelum melanjutkan."
         >
-            <Head title="Confirm password" />
+            <Head title="Konfirmasi Kata Sandi" />
 
-            <form onSubmit={submit}>
-                <div className="space-y-6">
+            <form onSubmit={submit} className="flex flex-col gap-5">
+                <div className="grid gap-5">
                     <div className="grid gap-2">
-                        <Label htmlFor="password">Password</Label>
+                        <Label htmlFor="password" className="font-semibold text-xs tracking-wider uppercase text-gray-500 dark:text-slate-400">Kata Sandi</Label>
                         <Input
                             id="password"
                             type="password"
                             name="password"
-                            placeholder="Password"
+                            placeholder="Masukkan kata sandi Anda"
                             autoComplete="current-password"
                             value={data.password}
                             autoFocus
                             onChange={(e) => setData('password', e.target.value)}
+                            className="rounded-xl border-gray-200 dark:border-slate-800 bg-[#F8F9FB] dark:bg-slate-900/50 focus-visible:ring-indigo-500/20 dark:focus-visible:ring-indigo-500/10 focus-visible:border-indigo-500 transition-all duration-200 h-11 px-4"
                         />
 
                         <InputError message={errors.password} />
                     </div>
 
-                    <div className="flex items-center">
-                        <Button className="w-full" disabled={processing}>
-                            {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                            Confirm password
-                        </Button>
-                    </div>
+                    <Button type="submit" className="mt-2 w-full h-11 rounded-xl bg-[#2F3E8F] dark:bg-indigo-600 hover:bg-[#233075] dark:hover:bg-indigo-500 text-white font-bold shadow-md hover:shadow-indigo-500/10 transition-all duration-200 active:scale-[0.98] border-none" disabled={processing}>
+                        {processing && <LoaderCircle className="h-4 w-4 animate-spin mr-2" />}
+                        Konfirmasi Kata Sandi
+                    </Button>
                 </div>
             </form>
         </AuthLayout>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreActivityRequest extends FormRequest
@@ -11,24 +12,32 @@ class StoreActivityRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        return $this->user()->isAdmin() || $this->user()->isInisiator();
     }
 
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
             'title' => ['required', 'string', 'max:200'],
             'description' => ['required', 'string'],
+            'requirements' => ['nullable', 'string'],
             'category_id' => ['required', 'exists:categories,id'],
             'location' => ['nullable', 'string', 'max:255'],
+            'is_online' => ['nullable', 'boolean'],
+            'meeting_link' => ['nullable', 'url', 'max:255'],
             'event_date' => ['nullable', 'date'],
             'deadline_date' => ['nullable', 'date', 'before_or_equal:event_date'],
+            'quota' => ['nullable', 'integer', 'min:1'],
+            'contact' => ['nullable', 'string', 'max:255'],
             'poster' => ['nullable', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
+            'is_team_based' => ['nullable', 'boolean'],
+            'has_participants' => ['nullable', 'boolean'],
+            'team_leader_id' => ['nullable', 'exists:users,id'],
         ];
     }
 

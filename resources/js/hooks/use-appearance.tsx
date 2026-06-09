@@ -20,8 +20,13 @@ const setCookie = (name: string, value: string, days = 365) => {
 };
 
 const applyTheme = (appearance: Appearance) => {
-    // Force light mode
-    document.documentElement.classList.remove('dark');
+    const isDark = appearance === 'dark' || (appearance === 'system' && prefersDark());
+
+    if (isDark) {
+        document.documentElement.classList.add('dark');
+    } else {
+        document.documentElement.classList.remove('dark');
+    }
 };
 
 const mediaQuery = () => {

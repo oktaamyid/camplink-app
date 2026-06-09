@@ -3,13 +3,16 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
     /**
@@ -19,6 +22,7 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'username',
         'email',
         'password',
         'role',
@@ -29,6 +33,9 @@ class User extends Authenticatable
         'location',
         'skills',
         'interests',
+        'experience',
+        'education',
+        'external_certificates',
         'profile_pic',
         'is_active',
     ];
@@ -54,6 +61,9 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'experience' => 'array',
+            'education' => 'array',
+            'external_certificates' => 'array',
         ];
     }
 
@@ -62,19 +72,43 @@ class User extends Authenticatable
         return $this->role === 'admin';
     }
 
-    public function activities(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function isInisiator(): bool
+    {
+        return $this->role === 'inisiator';
+    }
+
+    public function inisiatorRequest(): HasOne
+    {
+        return $this->hasOne(InisiatorRequest::class);
+    }
+
+    public function activities(): HasMany
     {
         return $this->hasMany(Activity::class, 'creator_id');
     }
 
-    public function activityRegistrations(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function activityRegistrations(): HasMany
     {
         return $this->hasMany(ActivityRegistration::class);
     }
 
-    public function teamApplications(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function teamApplications(): HasMany
     {
         return $this->hasMany(TeamApplication::class, 'applicant_id');
     }
 
+    public function announcements(): HasMany
+    {
+        return $this->hasMany(Announcement::class, 'creator_id');
+    }
+
+    public function bookmarks(): HasMany
+    {
+        return $this->hasMany(Bookmark::class);
+    }
+
+    public function certificates(): HasMany
+    {
+        return $this->hasMany(Certificate::class);
+    }
 }

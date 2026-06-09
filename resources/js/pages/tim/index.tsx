@@ -2,6 +2,8 @@ import CampLinkLayout from '@/layouts/camplink-layout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { ArrowLeft, Users, CheckCircle2, XCircle, FileText, MessageSquare } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 interface User {
     id: number;
@@ -34,6 +36,8 @@ interface Activity {
     title: string;
     creator_id: number;
     creator: User;
+    team_leader_id: number | null;
+    team_leader?: User | null;
 }
 
 interface Props {
@@ -89,7 +93,7 @@ export default function Tim({ activity, recruitment }: Props) {
     const pendingApplications = recruitment.applications.filter(a => a.status === 'pending');
 
     // Calculate open positions and filled quota
-    const positions = recruitment.skills_required.map(skill => {
+    const positions = (recruitment?.skills_required || []).map(skill => {
         const filled = acceptedApplications.filter(a => a.role === skill.title).length;
         return {
             ...skill,
@@ -97,9 +101,49 @@ export default function Tim({ activity, recruitment }: Props) {
         };
     });
 
+    // Determine if creator is currently the leader
+    const inisiatorIsLeader = !activity.team_leader_id || activity.team_leader_id === activity.creator_id;
+
+    const [isLeaderDialogOpen, setIsLeaderDialogOpen] = useState(false);
+    const [selectedLeader, setSelectedLeader] = useState<number | null>(null);
+
+    const handleSetLeader = (userId: number) => {
+        setSelectedLeader(userId);
+        setIsLeaderDialogOpen(true);
+    };
+
+    const confirmSetLeader = () => {
+        if (!selectedLeader) return;
+
+        router.patch(route('kegiatan.update-team-leader', activity.id), {
+            user_id: selectedLeader,
+        }, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setIsLeaderDialogOpen(false);
+                setSelectedLeader(null);
+            },
+        });
+    };
+
     return (
         <CampLinkLayout>
             <Head title={`Tim - ${activity.title}`} />
+
+            <Dialog open={isLeaderDialogOpen} onOpenChange={setIsLeaderDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Jadikan Ketua Tim?</DialogTitle>
+                        <DialogDescription>
+                            Apakah Anda yakin ingin menjadikan anggota ini sebagai Ketua Tim? Aksi ini akan menggantikan ketua tim sebelumnya.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsLeaderDialogOpen(false)}>Batal</Button>
+                        <Button className="bg-[#2F3E8F] hover:bg-[#243070]" onClick={confirmSetLeader}>Konfirmasi</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             <div className="mb-4">
                 <Link
@@ -133,7 +177,7 @@ export default function Tim({ activity, recruitment }: Props) {
                                 <span>Kapasitas tim (termasuk ketua)</span>
                                 <span>{recruitment.filled_slots + 1} dari {recruitment.total_slots + 1} anggota</span>
                             </div>
-                            <div className="h-2 w-full rounded-full bg-gray-100">
+                            <div className="h-2 w-full rounded-full bg-gray-100 dark:bg-slate-800">
                                 <div
                                     className="h-2 rounded-full bg-[#2F3E8F] transition-all"
                                     style={{ width: `${Math.min(((recruitment.filled_slots + 1) / (recruitment.total_slots + 1)) * 100, 100)}%` }}
@@ -142,60 +186,94 @@ export default function Tim({ activity, recruitment }: Props) {
                         </div>
 
                         <div className="space-y-3">
-                            {/* Leader */}
-                            <div className="flex items-center justify-between rounded-lg bg-[#2F3E8F]/5 px-4 py-3 border border-[#2F3E8F]/10">
+                            {/* Inisiator Row */}
+                            <div className={`flex items-center justify-between rounded-lg px-4 py-3 ${inisiatorIsLeader ? 'bg-[#2F3E8F]/5 border border-[#2F3E8F]/10' : 'bg-gray-50'}`}>
                                 <div className="flex items-center gap-3">
-                                    <div className="flex size-9 items-center justify-center rounded-full bg-[#2F3E8F]">
-                                        <span className="text-xs font-semibold text-white">
+                                    <Link href={route('profil.index', activity.creator_id)} className="flex size-9 items-center justify-center rounded-full bg-indigo-600 hover:opacity-90 transition-opacity text-white font-semibold">
+                                        <span className="text-xs">
                                             {activity.creator.name.substring(0, 2).toUpperCase()}
                                         </span>
-                                    </div>
+                                    </Link>
                                     <div>
                                         <div className="flex items-center gap-2">
-                                            <p className="text-sm font-medium text-gray-900">{activity.creator.name}</p>
-                                            <span className="rounded-full bg-[#2F3E8F] px-2 py-0.5 text-xs font-medium text-white">
-                                                Ketua Tim
+                                            <Link href={route('profil.index', activity.creator_id)} className="text-sm font-medium text-gray-900 hover:underline">{activity.creator.name}</Link>
+                                            <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-semibold text-indigo-700 uppercase tracking-wider">
+                                                Inisiator
                                             </span>
+                                            {inisiatorIsLeader && (
+                                                <span className="rounded-full bg-[#2F3E8F] px-2 py-0.5 text-[10px] font-semibold text-white uppercase tracking-wider">
+                                                    Ketua Tim
+                                                </span>
+                                            )}
                                         </div>
-                                        <p className="text-xs text-gray-500">Event Creator</p>
+                                        <p className="text-xs text-gray-500">Pembuat Kegiatan</p>
                                     </div>
                                 </div>
+                                
+                                {isCreator && !inisiatorIsLeader && (
+                                    <button 
+                                        onClick={() => handleSetLeader(activity.creator_id)}
+                                        className="text-xs font-medium text-[#2F3E8F] hover:underline"
+                                    >
+                                        Ambil Alih Ketua
+                                    </button>
+                                )}
                             </div>
 
                             {/* Accepted Members */}
-                            {acceptedApplications.map((app, i) => (
-                                <div
-                                    key={app.id}
-                                    className="flex items-center justify-between rounded-lg bg-gray-50 px-4 py-3"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className={`flex size-9 items-center justify-center rounded-full ${avatarColors[i % avatarColors.length]}`}>
-                                            <span className="text-xs font-semibold text-white">
-                                                {app.applicant.name.substring(0, 2).toUpperCase()}
+                            {acceptedApplications.map((app, i) => {
+                                const isLeader = activity.team_leader_id === app.applicant_id;
+                                return (
+                                    <div
+                                        key={app.id}
+                                        className={`flex items-center justify-between rounded-lg px-4 py-3 ${isLeader ? 'bg-[#2F3E8F]/5 border border-[#2F3E8F]/10' : 'bg-gray-50'}`}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <Link href={route('profil.index', app.applicant_id)} className={`flex size-9 items-center justify-center rounded-full ${avatarColors[i % avatarColors.length]} hover:opacity-90 transition-opacity text-white font-semibold`}>
+                                                <span className="text-xs">
+                                                    {app.applicant.name.substring(0, 2).toUpperCase()}
+                                                </span>
+                                            </Link>
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <Link href={route('profil.index', app.applicant_id)} className="text-sm font-medium text-gray-900 hover:underline">{app.applicant.name}</Link>
+                                                    {isLeader && (
+                                                        <span className="rounded-full bg-[#2F3E8F] px-2 py-0.5 text-[10px] font-semibold text-white uppercase tracking-wider">
+                                                            Ketua Tim
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <p className="text-xs text-gray-500">{app.role}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700">
+                                                <CheckCircle2 className="size-3" />
+                                                Diterima
                                             </span>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-medium text-gray-900">{app.applicant.name}</p>
-                                            <p className="text-xs text-gray-500">{app.role}</p>
+                                            
+                                            {isCreator && !isLeader && (
+                                                <button 
+                                                    onClick={() => handleSetLeader(app.applicant_id)}
+                                                    className="text-xs font-medium text-[#2F3E8F] hover:underline"
+                                                >
+                                                    Jadikan Ketua
+                                                </button>
+                                            )}
+
+                                            {currentUser?.id !== app.applicant_id && (
+                                                <button 
+                                                    onClick={() => router.post('/pesan/mulai', { user_id: app.applicant_id })}
+                                                    className="p-1.5 text-gray-400 hover:text-[#2F3E8F] hover:bg-[#2F3E8F]/10 rounded-lg transition-colors"
+                                                    title="Kirim Pesan"
+                                                >
+                                                    <MessageSquare className="size-4" />
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700">
-                                            <CheckCircle2 className="size-3" />
-                                            Diterima
-                                        </span>
-                                        {currentUser?.id !== app.applicant_id && (
-                                            <button 
-                                                onClick={() => router.post('/pesan/mulai', { other_user_id: app.applicant_id })}
-                                                className="p-1.5 text-gray-400 hover:text-[#2F3E8F] hover:bg-[#2F3E8F]/10 rounded-lg transition-colors"
-                                                title="Kirim Pesan"
-                                            >
-                                                <MessageSquare className="size-4" />
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
 
@@ -238,13 +316,13 @@ export default function Tim({ activity, recruitment }: Props) {
                                         >
                                             <div className="flex items-start justify-between mb-3">
                                                 <div className="flex items-center gap-3">
-                                                    <div className={`flex size-9 items-center justify-center rounded-full ${avatarColors[(i + 3) % avatarColors.length]}`}>
-                                                        <span className="text-xs font-semibold text-white">
+                                                    <Link href={route('profil.index', req.applicant_id)} className={`flex size-9 items-center justify-center rounded-full ${avatarColors[(i + 3) % avatarColors.length]} hover:opacity-90 transition-opacity text-white font-semibold`}>
+                                                        <span className="text-xs">
                                                             {req.applicant.name.substring(0, 2).toUpperCase()}
                                                         </span>
-                                                    </div>
+                                                    </Link>
                                                     <div>
-                                                        <p className="text-sm font-medium text-gray-900">{req.applicant.name}</p>
+                                                        <Link href={route('profil.index', req.applicant_id)} className="text-sm font-medium text-gray-900 hover:underline block">{req.applicant.name}</Link>
                                                         <p className="text-xs font-medium text-[#2F3E8F]">{req.role}</p>
                                                     </div>
                                                 </div>

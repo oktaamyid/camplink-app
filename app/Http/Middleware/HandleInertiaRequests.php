@@ -2,6 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Conversation;
+use App\Models\InisiatorRequest;
+use App\Models\Message;
+use App\Models\User;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -47,6 +51,11 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user() ? array_merge($request->user()->toArray(), [
                     'notifications' => $request->user()->unreadNotifications()->take(5)->get(),
                     'unread_notifications_count' => $request->user()->unreadNotifications()->count(),
+                    'unread_messages_count' => $this->getUnreadMessagesCount($request->user()),
+                    'pending_inisiators_count' => $request->user()->isAdmin()
+                        ? InisiatorRequest::where('status', 'pending')->count()
+                        : 0,
+                    'inisiator_request' => $request->user()->inisiatorRequest,
                 ]) : null,
             ],
             'ziggy' => fn (): array => [
@@ -55,5 +64,36 @@ class HandleInertiaRequests extends Middleware
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
+    }
+
+    /**
+     * Get the count of unread chat messages for the given user.
+     */
+    private function getUnreadMessagesCount(User $user): int
+    {
+        $userConversationIds = Conversation::query()
+            ->where(function ($q) use ($user) {
+                $q->whereNull('team_recruitment_id')
+                    ->where(function ($sub) use ($user) {
+                        $sub->where('user_one_id', $user->id)->orWhere('user_two_id', $user->id);
+                    });
+            })
+            ->orWhere(function ($q) use ($user) {
+                $q->whereNotNull('team_recruitment_id')
+                    ->whereHas('teamRecruitment', function ($sub) use ($user) {
+                        $sub->whereHas('activity', function ($act) use ($user) {
+                            $act->where('creator_id', $user->id);
+                        })
+                            ->orWhereHas('applications', function ($app) use ($user) {
+                                $app->where('applicant_id', $user->id)->where('status', 'accepted');
+                            });
+                    });
+            })
+            ->pluck('id');
+
+        return Message::whereIn('conversation_id', $userConversationIds)
+            ->where('sender_id', '!=', $user->id)
+            ->where('is_read', false)
+            ->count();
     }
 }
