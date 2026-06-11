@@ -7,7 +7,7 @@ RUN corepack enable pnpm
 
 # Install dependencies first (caching layer)
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+RUN pnpm config set ignore-scripts true && pnpm install --frozen-lockfile
 
 # Copy the rest of the application and build
 COPY . .
