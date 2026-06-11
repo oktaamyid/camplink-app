@@ -232,7 +232,7 @@ export default function CampLinkLayout({ children }: CampLinkLayoutProps) {
                                         </Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem asChild className="rounded-xl h-10 px-3 focus:bg-[#F8F9FB] dark:focus:bg-slate-800 cursor-pointer group">
-                                        <Link href="/pengaturan" className="flex items-center gap-3">
+                                        <Link href={route('profile.edit')} className="flex items-center gap-3">
                                             <Settings className="size-4 text-[#505050] dark:text-slate-400 group-focus:text-[#2F3E8F] dark:group-focus:text-slate-200" />
                                             <span className="text-sm font-semibold text-[#111111] dark:text-slate-200">Pengaturan</span>
                                         </Link>

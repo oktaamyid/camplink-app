@@ -160,6 +160,10 @@ Route::middleware(['auth'])->group(function () {
                 'experience' => $resolvedUser->experience ?? [],
                 'education' => $resolvedUser->education ?? [],
                 'external_certificates' => $resolvedUser->external_certificates ?? [],
+                'website_url' => $resolvedUser->website_url,
+                'github_url' => $resolvedUser->github_url,
+                'linkedin_url' => $resolvedUser->linkedin_url,
+                'instagram_url' => $resolvedUser->instagram_url,
                 'stats' => [
                     'events' => $resolvedUser->activity_registrations_count,
                     'teams' => $resolvedUser->team_applications_count,
@@ -169,7 +173,6 @@ Route::middleware(['auth'])->group(function () {
             ],
         ]);
     })->name('profil.index');
-    Route::get('/pengaturan', fn () => Inertia::render('profil/index'))->name('pengaturan.index');
 });
 
 require __DIR__.'/settings.php';

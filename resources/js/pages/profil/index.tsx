@@ -38,6 +38,10 @@ export default function Profil({ profileData }: { profileData: any }) {
         experience: profileData.experience || [],
         education: profileData.education || [],
         external_certificates: profileData.external_certificates || [],
+        website_url: profileData.website_url,
+        github_url: profileData.github_url,
+        linkedin_url: profileData.linkedin_url,
+        instagram_url: profileData.instagram_url,
     };
 
     const isOwnProfile = !profile.id || auth?.user?.id === profile.id;
@@ -241,16 +245,30 @@ export default function Profil({ profileData }: { profileData: any }) {
                         </div>
 
                         {/* Social links */}
-                        <div className="mt-4 flex items-center gap-2">
-                            {[Globe, Github, Linkedin, Instagram].map((Icon, i) => (
-                                <button
-                                    key={i}
-                                    className="flex size-8 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-[#2F3E8F] hover:text-[#2F3E8F] transition-colors"
-                                >
-                                    <Icon className="size-4" />
-                                </button>
-                            ))}
-                        </div>
+                        {(profile.website_url || profile.github_url || profile.linkedin_url || profile.instagram_url) && (
+                            <div className="mt-4 flex items-center gap-2">
+                                {profile.website_url && (
+                                    <a href={profile.website_url} target="_blank" rel="noopener noreferrer" className="flex size-8 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-[#2F3E8F] hover:text-[#2F3E8F] transition-colors" title="Website / Portfolio">
+                                        <Globe className="size-4" />
+                                    </a>
+                                )}
+                                {profile.github_url && (
+                                    <a href={profile.github_url} target="_blank" rel="noopener noreferrer" className="flex size-8 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-[#2F3E8F] hover:text-[#2F3E8F] transition-colors" title="GitHub">
+                                        <Github className="size-4" />
+                                    </a>
+                                )}
+                                {profile.linkedin_url && (
+                                    <a href={profile.linkedin_url} target="_blank" rel="noopener noreferrer" className="flex size-8 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-[#2F3E8F] hover:text-[#2F3E8F] transition-colors" title="LinkedIn">
+                                        <Linkedin className="size-4" />
+                                    </a>
+                                )}
+                                {profile.instagram_url && (
+                                    <a href={profile.instagram_url} target="_blank" rel="noopener noreferrer" className="flex size-8 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-[#2F3E8F] hover:text-[#2F3E8F] transition-colors" title="Instagram">
+                                        <Instagram className="size-4" />
+                                    </a>
+                                )}
+                            </div>
+                        )}
 
                         {!isOwnProfile && (
                             <button

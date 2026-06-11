@@ -47,6 +47,7 @@ interface Activity {
     category: Category;
     creator: User;
     is_team_based?: boolean;
+    has_participants?: boolean;
     recruitment?: TeamRecruitment;
     reviews: ActivityReview[];
 }
