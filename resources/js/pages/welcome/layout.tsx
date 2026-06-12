@@ -1,51 +1,292 @@
 import AppearanceToggleDropdown from '@/components/appearance-dropdown';
 import CampLinkLogo from '@/components/camplink-logo';
 import { type SharedData } from '@/types';
-import { Link, usePage } from '@inertiajs/react';
-import { Menu, X } from 'lucide-react';
+import { Link, usePage, useForm } from '@inertiajs/react';
+import { Menu, X, ArrowRight, Instagram, Linkedin, Youtube, LoaderCircle } from 'lucide-react';
 import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import InputError from '@/components/input-error';
+
+const TikTokIcon = ({ className = 'size-4' }: { className?: string }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
+    </svg>
+);
+
+function LoginFormModal({ onSuccess, switchToRegister }: { onSuccess: () => void; switchToRegister: () => void }) {
+    const { data, setData, post, processing, errors, reset } = useForm({
+        email: '',
+        password: '',
+        remember: false,
+    });
+
+    const submit = (e: React.FormEvent) => {
+        e.preventDefault();
+        post(route('login'), {
+            onFinish: () => reset('password'),
+            onSuccess: () => onSuccess(),
+        });
+    };
+
+    return (
+        <form className="flex flex-col gap-4 mt-2 text-left" onSubmit={submit}>
+            <div className="grid gap-4">
+                <div className="grid gap-2">
+                    <Label htmlFor="email" className="font-semibold text-xs tracking-wider uppercase text-gray-500 dark:text-slate-400">Alamat Email</Label>
+                    <Input
+                        id="email"
+                        type="email"
+                        required
+                        value={data.email}
+                        onChange={(e) => setData('email', e.target.value)}
+                        placeholder="nama@email.com"
+                        className="rounded-xl border-gray-200 dark:border-slate-800 bg-[#F8F9FB] dark:bg-slate-900/50 focus-visible:ring-indigo-500/20 dark:focus-visible:ring-indigo-500/10 focus-visible:border-indigo-500 transition-all duration-200 h-11 px-4 text-slate-800 dark:text-white placeholder:text-slate-400"
+                    />
+                    <InputError message={errors.email} />
+                </div>
+
+                <div className="grid gap-2">
+                    <div className="flex items-center justify-between">
+                        <Label htmlFor="password" className="font-semibold text-xs tracking-wider uppercase text-gray-500 dark:text-slate-400">Kata Sandi</Label>
+                    </div>
+                    <Input
+                        id="password"
+                        type="password"
+                        required
+                        value={data.password}
+                        onChange={(e) => setData('password', e.target.value)}
+                        placeholder="Masukkan kata sandi Anda"
+                        className="rounded-xl border-gray-200 dark:border-slate-800 bg-[#F8F9FB] dark:bg-slate-900/50 focus-visible:ring-indigo-500/20 dark:focus-visible:ring-indigo-500/10 focus-visible:border-indigo-500 transition-all duration-200 h-11 px-4 text-slate-800 dark:text-white placeholder:text-slate-400"
+                    />
+                    <InputError message={errors.password} />
+                </div>
+
+                <div className="flex items-center space-x-3 py-1">
+                    <Checkbox
+                        id="remember"
+                        name="remember"
+                        checked={data.remember}
+                        onCheckedChange={(checked) => setData('remember', !!checked)}
+                        className="border-gray-300 dark:border-slate-700 data-[state=checked]:bg-[#2563EB] data-[state=checked]:border-[#2563EB] rounded-md"
+                    />
+                    <Label htmlFor="remember" className="text-sm text-slate-600 dark:text-slate-400 cursor-pointer select-none font-medium">Ingat saya</Label>
+                </div>
+
+                <Button type="submit" className="mt-2 w-full h-11 rounded-xl bg-[#2563EB] hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white font-bold shadow-md transition-all duration-200 active:scale-[0.98] border-none" disabled={processing}>
+                    {processing && <LoaderCircle className="h-4 w-4 animate-spin mr-2" />}
+                    Masuk Sistem
+                </Button>
+            </div>
+
+            <div className="text-center text-sm text-gray-500 dark:text-slate-400 mt-2">
+                Belum punya akun?{' '}
+                <button type="button" onClick={switchToRegister} className="text-[#2563EB] dark:text-blue-400 hover:underline font-bold ml-1 cursor-pointer">
+                    Daftar di sini
+                </button>
+            </div>
+        </form>
+    );
+}
+
+function RegisterFormModal({ onSuccess, switchToLogin }: { onSuccess: () => void; switchToLogin: () => void }) {
+    const { data, setData, post, processing, errors, reset } = useForm({
+        name: '',
+        email: '',
+        password: '',
+        password_confirmation: '',
+    });
+
+    const submit = (e: React.FormEvent) => {
+        e.preventDefault();
+        post(route('register'), {
+            onFinish: () => reset('password', 'password_confirmation'),
+            onSuccess: () => onSuccess(),
+        });
+    };
+
+    return (
+        <form className="flex flex-col gap-4 mt-2 text-left" onSubmit={submit}>
+            <div className="grid gap-3">
+                <div className="grid gap-1.5">
+                    <Label htmlFor="reg-name" className="font-semibold text-xs tracking-wider uppercase text-gray-500 dark:text-slate-400">Nama Lengkap</Label>
+                    <Input
+                        id="reg-name"
+                        type="text"
+                        required
+                        value={data.name}
+                        onChange={(e) => setData('name', e.target.value)}
+                        placeholder="Nama Lengkap Anda"
+                        className="rounded-xl border-gray-200 dark:border-slate-800 bg-[#F8F9FB] dark:bg-slate-900/50 focus-visible:ring-indigo-500/20 dark:focus-visible:ring-indigo-500/10 focus-visible:border-indigo-500 transition-all duration-200 h-10 px-4 text-slate-800 dark:text-white placeholder:text-slate-400"
+                    />
+                    <InputError message={errors.name} />
+                </div>
+
+                <div className="grid gap-1.5">
+                    <Label htmlFor="reg-email" className="font-semibold text-xs tracking-wider uppercase text-gray-500 dark:text-slate-400">Alamat Email</Label>
+                    <Input
+                        id="reg-email"
+                        type="email"
+                        required
+                        value={data.email}
+                        onChange={(e) => setData('email', e.target.value)}
+                        placeholder="nama@email.com"
+                        className="rounded-xl border-gray-200 dark:border-slate-800 bg-[#F8F9FB] dark:bg-slate-900/50 focus-visible:ring-indigo-500/20 dark:focus-visible:ring-indigo-500/10 focus-visible:border-indigo-500 transition-all duration-200 h-10 px-4 text-slate-800 dark:text-white placeholder:text-slate-400"
+                    />
+                    <InputError message={errors.email} />
+                </div>
+
+                <div className="grid gap-1.5">
+                    <Label htmlFor="reg-password" className="font-semibold text-xs tracking-wider uppercase text-gray-500 dark:text-slate-400">Kata Sandi</Label>
+                    <Input
+                        id="reg-password"
+                        type="password"
+                        required
+                        value={data.password}
+                        onChange={(e) => setData('password', e.target.value)}
+                        placeholder="Buat kata sandi minimal 8 karakter"
+                        className="rounded-xl border-gray-200 dark:border-slate-800 bg-[#F8F9FB] dark:bg-slate-900/50 focus-visible:ring-indigo-500/20 dark:focus-visible:ring-indigo-500/10 focus-visible:border-indigo-500 transition-all duration-200 h-10 px-4 text-slate-800 dark:text-white placeholder:text-slate-400"
+                    />
+                    <InputError message={errors.password} />
+                </div>
+
+                <div className="grid gap-1.5">
+                    <Label htmlFor="reg-password-confirmation" className="font-semibold text-xs tracking-wider uppercase text-gray-500 dark:text-slate-400">Konfirmasi Kata Sandi</Label>
+                    <Input
+                        id="reg-password-confirmation"
+                        type="password"
+                        required
+                        value={data.password_confirmation}
+                        onChange={(e) => setData('password_confirmation', e.target.value)}
+                        placeholder="Ulangi kata sandi Anda"
+                        className="rounded-xl border-gray-200 dark:border-slate-800 bg-[#F8F9FB] dark:bg-slate-900/50 focus-visible:ring-indigo-500/20 dark:focus-visible:ring-indigo-500/10 focus-visible:border-indigo-500 transition-all duration-200 h-10 px-4 text-slate-800 dark:text-white placeholder:text-slate-400"
+                    />
+                    <InputError message={errors.password_confirmation} />
+                </div>
+
+                <Button type="submit" className="mt-2 w-full h-11 rounded-xl bg-[#2563EB] hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white font-bold shadow-md transition-all duration-200 active:scale-[0.98] border-none" disabled={processing}>
+                    {processing && <LoaderCircle className="h-4 w-4 animate-spin mr-2" />}
+                    Daftar Akun Baru
+                </Button>
+            </div>
+
+            <div className="text-center text-sm text-gray-500 dark:text-slate-400 mt-2">
+                Sudah punya akun?{' '}
+                <button type="button" onClick={switchToLogin} className="text-[#2563EB] dark:text-blue-400 hover:underline font-bold ml-1 cursor-pointer">
+                    Masuk di sini
+                </button>
+            </div>
+        </form>
+    );
+}
 
 export default function WelcomeLayout({ children }: { children: React.ReactNode }) {
     const { auth } = usePage<SharedData>().props;
     const { url } = usePage();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [loginOpen, setLoginOpen] = useState(false);
+    const [registerOpen, setRegisterOpen] = useState(false);
 
     const navItems = [
-        { label: 'Home', href: route('home'), active: url === '/' },
-        { label: 'About', href: route('about'), active: url === '/about' },
-        { label: 'Service', href: route('service'), active: url === '/service' },
-        { label: 'FAQ', href: route('faq'), active: url === '/faq' },
+        { label: 'Beranda', href: route('home'), active: url === '/' },
+        { label: 'Event', href: url === '/' ? '#event-mendatang' : '/#event-mendatang', active: false },
+        { label: 'Kolaborasi', href: url === '/' ? '#kolaborasi-pilihan' : '/#kolaborasi-pilihan', active: false },
+        { label: 'Tentang', href: route('about'), active: url === '/about' },
     ];
 
     return (
-        <div className="min-h-screen bg-white dark:bg-[#090D1A] text-slate-700 dark:text-slate-300 transition-colors duration-300 font-sans antialiased relative overflow-x-hidden">
+        <div className="min-h-screen bg-[#FDFDFD] dark:bg-[#090D1A] text-slate-700 dark:text-slate-300 transition-colors duration-300 font-sans antialiased relative overflow-x-hidden">
+            <style>{`
+                .bg-grid-pattern {
+                    background-size: 50px 50px;
+                    background-image: 
+                        linear-gradient(to right, rgba(99, 102, 241, 0.05) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(99, 102, 241, 0.05) 1px, transparent 1px);
+                    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 150px, black calc(100% - 150px), transparent 100%);
+                    mask-image: linear-gradient(to bottom, transparent 0%, black 150px, black calc(100% - 150px), transparent 100%);
+                }
+                .dark .bg-grid-pattern {
+                    background-image: 
+                        linear-gradient(to right, rgba(99, 102, 241, 0.08) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(99, 102, 241, 0.08) 1px, transparent 1px);
+                }
+                @keyframes shine-sweep-v {
+                    0% {
+                        top: -250px;
+                    }
+                    100% {
+                        top: 100%;
+                    }
+                }
+                @keyframes shine-sweep-h {
+                    0% {
+                        left: -200px;
+                    }
+                    100% {
+                        left: 100%;
+                    }
+                }
+                .animate-shine-sweep-v {
+                    animation: shine-sweep-v 15s infinite linear;
+                }
+                .animate-shine-sweep-v-delayed {
+                    animation: shine-sweep-v 15s infinite linear;
+                    animation-delay: 7.5s;
+                }
+                .animate-shine-sweep-h {
+                    animation: shine-sweep-h 10s infinite linear;
+                }
+            `}</style>
+
+            {/* Grid Background with Sweeping Shine Borders */}
+            <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+                {/* Framed grid in the center of side borders */}
+                <div className="absolute inset-y-0 left-4 md:left-[8%] right-4 md:right-[8%] bg-grid-pattern opacity-70 dark:opacity-100 border-x border-slate-200/40 dark:border-slate-800/40 z-0" />
+                
+                {/* Horizontal Top Edge Shine Line (framed right below navbar) */}
+                <div className="absolute top-[72px] left-4 md:left-[8%] right-4 md:right-[8%] h-[1px] bg-slate-200/40 dark:bg-slate-800/40 z-[2] overflow-hidden">
+                    <div className="absolute top-0 h-full w-[200px] bg-gradient-to-r from-transparent via-[#2563EB] dark:via-blue-500 to-transparent animate-shine-sweep-h" />
+                </div>
+
+                {/* Vertical Left Edge Shine Line */}
+                <div className="absolute inset-y-0 left-4 md:left-[8%] w-[1px] z-[2] overflow-hidden">
+                    <div className="absolute left-0 w-full h-[250px] bg-gradient-to-b from-transparent via-[#2563EB] dark:via-blue-500 to-transparent animate-shine-sweep-v" />
+                </div>
+
+                {/* Vertical Right Edge Shine Line */}
+                <div className="absolute inset-y-0 right-4 md:right-[8%] w-[1px] z-[2] overflow-hidden">
+                    <div className="absolute left-0 w-full h-[250px] bg-gradient-to-b from-transparent via-[#10B981] dark:via-emerald-400 to-transparent animate-shine-sweep-v-delayed" />
+                </div>
+            </div>
             {/* Header Navbar - Fixed Glassmorphism */}
-            <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-white/70 dark:bg-[#090D1A]/70 border-b border-white/20 dark:border-slate-800/80 transition-all duration-200 shadow-xs">
+            <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-white/80 dark:bg-[#090D1A]/80 border-b border-slate-100 dark:border-slate-800/80 transition-all duration-200">
                 <div className="max-w-[1200px] mx-auto px-6 h-[72px] flex items-center justify-between">
                     {/* Logo */}
                     <div className="flex items-center">
                         <Link href={route('home')} className="transition-opacity active:scale-[0.98]">
-                            <CampLinkLogo textClassName="font-extrabold text-[#0F172A] dark:text-white" />
+                            <CampLinkLogo textClassName="font-extrabold text-[#0F172A] dark:text-white text-xl" />
                         </Link>
                     </div>
 
                     {/* Menu links */}
                     <nav className="hidden md:flex items-center gap-8">
                         {navItems.map((item) => (
-                            <Link
+                            <a
                                 key={item.label}
                                 href={item.href}
-                                className={`text-sm font-semibold transition-all duration-200 relative py-1.5 ${
-                                    item.active
+                                className={`text-sm font-semibold transition-all duration-200 relative py-1.5 ${item.active
                                         ? 'text-[#2563EB] dark:text-blue-500 font-bold'
                                         : 'text-slate-600 dark:text-slate-400 hover:text-[#2563EB] dark:hover:text-blue-500'
-                                }`}
+                                    }`}
                             >
                                 {item.label}
                                 {item.active && (
                                     <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#2563EB] dark:bg-blue-500 rounded-full" />
                                 )}
-                            </Link>
+                            </a>
                         ))}
                     </nav>
 
@@ -61,18 +302,18 @@ export default function WelcomeLayout({ children }: { children: React.ReactNode 
                             </Link>
                         ) : (
                             <>
-                                <Link
-                                    href={route('login')}
-                                    className="inline-flex items-center justify-center h-10 px-5 rounded-[12px] border border-[#2563EB] text-[#2563EB] dark:border-blue-500 dark:text-blue-500 text-sm font-semibold hover:bg-blue-50/50 dark:hover:bg-slate-900/50 transition-all duration-200"
+                                <button
+                                    onClick={() => setLoginOpen(true)}
+                                    className="inline-flex items-center justify-center h-10 px-5 rounded-[12px] border border-[#2563EB]/40 text-[#2563EB] dark:border-blue-500/40 dark:text-blue-400 text-sm font-semibold hover:bg-blue-50/50 dark:hover:bg-slate-900/50 transition-all duration-200 cursor-pointer bg-transparent"
                                 >
-                                    Login
-                                </Link>
-                                <Link
-                                    href={route('register')}
-                                    className="inline-flex items-center justify-center h-10 px-5 rounded-[12px] bg-[#2563EB] text-white text-sm font-semibold hover:bg-[#1d4ed8] transition-all duration-200 active:scale-[0.98]"
+                                    Masuk
+                                </button>
+                                <button
+                                    onClick={() => setRegisterOpen(true)}
+                                    className="inline-flex items-center justify-center h-10 px-5 rounded-[12px] bg-[#2563EB] text-white text-sm font-semibold hover:bg-[#1d4ed8] transition-all duration-200 active:scale-[0.98] cursor-pointer"
                                 >
-                                    Sign Up
-                                </Link>
+                                    Daftar
+                                </button>
                             </>
                         )}
                     </div>
@@ -94,18 +335,14 @@ export default function WelcomeLayout({ children }: { children: React.ReactNode 
                     <div className="md:hidden border-b border-slate-100 dark:border-slate-800 bg-white/95 dark:bg-[#090D1A]/95 backdrop-blur-lg px-6 py-4 flex flex-col gap-4 animate-in slide-in-from-top duration-200">
                         <div className="flex flex-col gap-2">
                             {navItems.map((item) => (
-                                <Link
+                                <a
                                     key={item.label}
                                     href={item.href}
                                     onClick={() => setMobileMenuOpen(false)}
-                                    className={`text-sm font-bold px-3 py-2 rounded-xl transition-all ${
-                                        item.active
-                                            ? 'bg-blue-50/80 dark:bg-slate-800/80 text-[#2563EB]'
-                                            : 'text-slate-600 dark:text-slate-400 hover:text-[#2563EB]'
-                                    }`}
+                                    className="text-sm font-bold px-3 py-2 rounded-xl transition-all text-slate-600 dark:text-slate-400 hover:text-[#2563EB] hover:bg-slate-50 dark:hover:bg-slate-900"
                                 >
                                     {item.label}
-                                </Link>
+                                </a>
                             ))}
                         </div>
                         <div className="h-[1px] bg-slate-100 dark:bg-slate-800" />
@@ -119,18 +356,18 @@ export default function WelcomeLayout({ children }: { children: React.ReactNode 
                                 </Link>
                             ) : (
                                 <>
-                                    <Link
-                                        href={route('login')}
-                                        className="inline-flex w-full items-center justify-center h-10 rounded-[12px] border border-[#2563EB] text-[#2563EB] dark:border-blue-500 dark:text-blue-500 text-sm font-semibold"
+                                    <button
+                                        onClick={() => { setMobileMenuOpen(false); setLoginOpen(true); }}
+                                        className="inline-flex w-full items-center justify-center h-10 rounded-[12px] border border-[#2563EB]/40 text-[#2563EB] dark:border-blue-500/40 dark:text-blue-400 text-sm font-semibold cursor-pointer bg-transparent"
                                     >
-                                        Login
-                                    </Link>
-                                    <Link
-                                        href={route('register')}
-                                        className="inline-flex w-full items-center justify-center h-10 rounded-[12px] bg-[#2563EB] text-white text-sm font-semibold"
+                                        Masuk
+                                    </button>
+                                    <button
+                                        onClick={() => { setMobileMenuOpen(false); setRegisterOpen(true); }}
+                                        className="inline-flex w-full items-center justify-center h-10 rounded-[12px] bg-[#2563EB] text-white text-sm font-semibold cursor-pointer"
                                     >
-                                        Sign Up
-                                    </Link>
+                                        Daftar
+                                    </button>
                                 </>
                             )}
                         </div>
@@ -144,38 +381,46 @@ export default function WelcomeLayout({ children }: { children: React.ReactNode 
             </main>
 
             {/* Detailed Multi-Column Footer */}
-            <footer className="border-t border-slate-100 dark:border-slate-800 bg-[#F8FAFC] dark:bg-[#0A0F1D] py-16 relative z-10">
+            <footer className="border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-[#070A13] py-16 relative z-10">
                 <div className="max-w-[1200px] mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
-                    
+
                     {/* Col 1: Brand Info */}
-                    <div className="lg:col-span-1 space-y-4">
-                        <CampLinkLogo textClassName="font-extrabold text-[#0F172A] dark:text-white" />
-                        <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                            Platform kegiatan mahasiswa & kolaborasi kampus untuk masa depan yang lebih baik.
+                    <div className="lg:col-span-2 space-y-4 pr-0 lg:pr-8">
+                        <CampLinkLogo textClassName="font-extrabold text-[#0F172A] dark:text-white text-xl" />
+                        <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                            Platform aktivitas dan kolaborasi mahasiswa untuk menciptakan dampak positif di kampus dan masyarakat.
                         </p>
-                        <div className="flex items-center gap-4 pt-2 text-slate-400 dark:text-slate-500">
-                            {/* Simple mock social media icons */}
-                            <span className="hover:text-[#2563EB] cursor-pointer"><span className="text-xs">IG</span></span>
-                            <span className="hover:text-[#2563EB] cursor-pointer"><span className="text-xs">IN</span></span>
-                            <span className="hover:text-[#2563EB] cursor-pointer"><span className="text-xs">YT</span></span>
-                            <span className="hover:text-[#2563EB] cursor-pointer"><span className="text-xs">TW</span></span>
+                        <div className="flex items-center gap-3 pt-2 text-slate-400 dark:text-slate-500">
+                            <a href="#" className="p-2 rounded-full border border-slate-200 dark:border-slate-800 hover:border-[#2563EB] hover:text-[#2563EB] transition-colors bg-white dark:bg-transparent">
+                                <Instagram className="size-4" />
+                            </a>
+                            <a href="#" className="p-2 rounded-full border border-slate-200 dark:border-slate-800 hover:border-[#2563EB] hover:text-[#2563EB] transition-colors bg-white dark:bg-transparent">
+                                <Linkedin className="size-4" />
+                            </a>
+                            <a href="#" className="p-2 rounded-full border border-slate-200 dark:border-slate-800 hover:border-[#2563EB] hover:text-[#2563EB] transition-colors bg-white dark:bg-transparent">
+                                <Youtube className="size-4" />
+                            </a>
+                            <a href="#" className="p-2 rounded-full border border-slate-200 dark:border-slate-800 hover:border-[#2563EB] hover:text-[#2563EB] transition-colors bg-white dark:bg-transparent">
+                                <TikTokIcon className="size-4" />
+                            </a>
                         </div>
                     </div>
 
                     {/* Col 2: Platform Links */}
                     <div className="space-y-4">
-                        <h4 className="text-xs font-bold text-[#0F172A] dark:text-white uppercase tracking-wider">Platform</h4>
-                        <ul className="space-y-2.5 text-xs text-slate-500 dark:text-slate-400">
-                            <li><Link href={route('about')} className="hover:text-[#2563EB] transition-colors">About</Link></li>
-                            <li><Link href={route('service')} className="hover:text-[#2563EB] transition-colors">Service</Link></li>
-                            <li><Link href={route('faq')} className="hover:text-[#2563EB] transition-colors">FAQ</Link></li>
+                        <h4 className="text-sm font-bold text-[#0F172A] dark:text-white">Platform</h4>
+                        <ul className="space-y-2.5 text-sm text-slate-500 dark:text-slate-400">
+                            <li><a href="#event-mendatang" className="hover:text-[#2563EB] transition-colors">Event</a></li>
+                            <li><a href="#kolaborasi-pilihan" className="hover:text-[#2563EB] transition-colors">Kolaborasi</a></li>
+                            <li><a href="#kolaborasi-pilihan" className="hover:text-[#2563EB] transition-colors">Proyek Saya</a></li>
+                            <li><a href="#kolaborasi-pilihan" className="hover:text-[#2563EB] transition-colors">Notifikasi</a></li>
                         </ul>
                     </div>
 
                     {/* Col 3: Perusahaan Links */}
                     <div className="space-y-4">
-                        <h4 className="text-xs font-bold text-[#0F172A] dark:text-white uppercase tracking-wider">Perusahaan</h4>
-                        <ul className="space-y-2.5 text-xs text-slate-500 dark:text-slate-400">
+                        <h4 className="text-sm font-bold text-[#0F172A] dark:text-white">Perusahaan</h4>
+                        <ul className="space-y-2.5 text-sm text-slate-500 dark:text-slate-400">
                             <li><span className="hover:text-[#2563EB] cursor-pointer transition-colors">Tentang Kami</span></li>
                             <li><span className="hover:text-[#2563EB] cursor-pointer transition-colors">Karier</span></li>
                             <li><span className="hover:text-[#2563EB] cursor-pointer transition-colors">Blog</span></li>
@@ -185,44 +430,75 @@ export default function WelcomeLayout({ children }: { children: React.ReactNode 
 
                     {/* Col 4: Bantuan Links */}
                     <div className="space-y-4">
-                        <h4 className="text-xs font-bold text-[#0F172A] dark:text-white uppercase tracking-wider">Bantuan</h4>
-                        <ul className="space-y-2.5 text-xs text-slate-500 dark:text-slate-400">
+                        <h4 className="text-sm font-bold text-[#0F172A] dark:text-white">Bantuan</h4>
+                        <ul className="space-y-2.5 text-sm text-slate-500 dark:text-slate-400">
                             <li><span className="hover:text-[#2563EB] cursor-pointer transition-colors">Pusat Bantuan</span></li>
-                            <li><span className="hover:text-[#2563EB] cursor-pointer transition-colors">Panduan</span></li>
-                            <li><span className="hover:text-[#2563EB] cursor-pointer transition-colors">Kebijakan Privasi</span></li>
                             <li><span className="hover:text-[#2563EB] cursor-pointer transition-colors">Syarat & Ketentuan</span></li>
+                            <li><span className="hover:text-[#2563EB] cursor-pointer transition-colors">Kebijakan Privasi</span></li>
                         </ul>
                     </div>
+                </div>
 
-                    {/* Col 5: App Download Links */}
-                    <div className="space-y-4">
-                        <h4 className="text-xs font-bold text-[#0F172A] dark:text-white uppercase tracking-wider">Unduh Aplikasi</h4>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">Segera hadir di iOS dan Android.</p>
-                        <div className="flex flex-col gap-2 pt-1 max-w-[140px]">
-                            {/* App download link layouts */}
-                            <div className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-left cursor-pointer hover:border-[#2563EB] dark:hover:border-blue-500 transition-all select-none">
-                                <span className="text-base"></span>
-                                <div>
-                                    <p className="text-[7px] text-slate-400 uppercase tracking-widest leading-none">Download on the</p>
-                                    <p className="text-[10px] font-bold text-[#0F172A] dark:text-white leading-tight mt-0.5">App Store</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-left cursor-pointer hover:border-[#2563EB] dark:hover:border-blue-500 transition-all select-none">
-                                <span className="text-base text-emerald-500">▶</span>
-                                <div>
-                                    <p className="text-[7px] text-slate-400 uppercase tracking-widest leading-none">GET IT ON</p>
-                                    <p className="text-[10px] font-bold text-[#0F172A] dark:text-white leading-tight mt-0.5">Google Play</p>
-                                </div>
-                            </div>
+                {/* Newsletter Box */}
+                <div className="max-w-[1200px] mx-auto px-6 mt-12 pt-8 border-t border-slate-100 dark:border-slate-800/80 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                    <div className="w-full max-w-md">
+                        <h4 className="text-sm font-bold text-slate-800 dark:text-white">Dapatkan update terbaru</h4>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Berlangganan newsletter Camplink.</p>
+                        <div className="flex items-center gap-2 mt-3">
+                            <input
+                                type="email"
+                                placeholder="Masukkan email kamu"
+                                className="h-10 px-4 flex-1 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111625] text-xs text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            />
+                            <button className="h-10 w-10 flex items-center justify-center rounded-lg bg-[#2563EB] hover:bg-blue-700 text-white transition-colors shrink-0">
+                                <ArrowRight className="size-4" />
+                            </button>
                         </div>
                     </div>
-                </div>
 
-                {/* Copyright Line */}
-                <div className="max-w-[1200px] mx-auto px-6 mt-12 pt-8 border-t border-slate-200/50 dark:border-slate-800/50 flex flex-col md:flex-row items-center justify-between text-xs text-slate-400 dark:text-slate-500">
-                    <p>© 2026 CampLink. All rights reserved.</p>
+                    <div className="text-xs text-slate-400 dark:text-slate-500 md:self-end">
+                        <p>© 2025 CampLink. Semua hak dilindungi.</p>
+                    </div>
                 </div>
             </footer>
+
+            {/* Login Dialog Modal */}
+            <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
+                <DialogContent className="sm:max-w-[420px] rounded-2xl bg-white dark:bg-[#0E121E] border border-slate-200 dark:border-slate-800/80 p-6 shadow-2xl">
+                    <DialogHeader className="text-left">
+                        <DialogTitle className="text-xl font-extrabold text-[#0F172A] dark:text-white">Masuk ke CampLink</DialogTitle>
+                        <DialogDescription className="text-xs text-slate-500 dark:text-slate-400">
+                            Masukkan email dan kata sandi Anda untuk masuk ke akun Anda.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <LoginFormModal
+                        onSuccess={() => setLoginOpen(false)}
+                        switchToRegister={() => {
+                            setLoginOpen(false);
+                            setRegisterOpen(true);
+                        }}
+                    />
+                </DialogContent>
+            </Dialog>
+
+            {/* Register Dialog Modal */}
+            <Dialog open={registerOpen} onOpenChange={setRegisterOpen}>
+                <DialogContent className="sm:max-w-[420px] rounded-2xl bg-white dark:bg-[#0E121E] border border-slate-200 dark:border-slate-800/80 p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
+                    <DialogHeader className="text-left">
+                        <DialogTitle className="text-xl font-extrabold text-[#0F172A] dark:text-white">Buat Akun Baru</DialogTitle>
+                        <DialogDescription className="text-xs text-slate-500 dark:text-slate-400">
+                            Masukkan detail Anda di bawah ini untuk mendaftar akun CampLink.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <RegisterFormModal
+                        onSuccess={() => setRegisterOpen(false)}
+                        switchToLogin={() => {
+                            setRegisterOpen(false);
+                            setLoginOpen(true);
+                        }}
+                    />
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

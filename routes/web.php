@@ -15,6 +15,7 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TeamLeaderController;
+use App\Models\Activity;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -27,7 +28,15 @@ Route::get('/', function () {
         return Auth::user()->role === 'admin' ? redirect()->route('dashboard') : redirect()->route('beranda');
     }
 
-    return Inertia::render('welcome/home');
+    $upcomingEvents = Activity::where('status', 'active')
+        ->with('category')
+        ->orderBy('event_date', 'asc')
+        ->limit(4)
+        ->get();
+
+    return Inertia::render('welcome/home', [
+        'upcomingEvents' => $upcomingEvents,
+    ]);
 })->name('home');
 
 Route::get('/service', function () {
