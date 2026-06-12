@@ -38,6 +38,10 @@ class User extends Authenticatable
         'external_certificates',
         'profile_pic',
         'is_active',
+        'website_url',
+        'github_url',
+        'linkedin_url',
+        'instagram_url',
     ];
 
     /**

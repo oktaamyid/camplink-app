@@ -8,7 +8,7 @@ import { BookOpen, Folder, LayoutGrid, PlusCircle, UserPlus, Home } from 'lucide
 import AppLogo from './app-logo';
 
 export function AppSidebar() {
-    const { auth } = usePage().props as any;
+    const { auth } = usePage().props as unknown as { auth: { user: { role: string } } };
     const user = auth.user;
 
     const mainNavItems: NavItem[] = [

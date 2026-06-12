@@ -203,64 +203,60 @@ export default function WelcomeLayout({ children }: { children: React.ReactNode 
                 .bg-grid-pattern {
                     background-size: 50px 50px;
                     background-image: 
-                        linear-gradient(to right, rgba(99, 102, 241, 0.05) 1px, transparent 1px),
-                        linear-gradient(to bottom, rgba(99, 102, 241, 0.05) 1px, transparent 1px);
-                    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 150px, black calc(100% - 150px), transparent 100%);
-                    mask-image: linear-gradient(to bottom, transparent 0%, black 150px, black calc(100% - 150px), transparent 100%);
+                        linear-gradient(to right, rgba(99, 102, 241, 0.18) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(99, 102, 241, 0.18) 1px, transparent 1px);
                 }
                 .dark .bg-grid-pattern {
                     background-image: 
-                        linear-gradient(to right, rgba(99, 102, 241, 0.08) 1px, transparent 1px),
-                        linear-gradient(to bottom, rgba(99, 102, 241, 0.08) 1px, transparent 1px);
+                        linear-gradient(to right, rgba(99, 102, 241, 0.1) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(99, 102, 241, 0.1) 1px, transparent 1px);
                 }
-                @keyframes shine-sweep-v {
-                    0% {
-                        top: -250px;
-                    }
-                    100% {
-                        top: 100%;
-                    }
+                @keyframes beam-down {
+                    0%   { top: -280px; }
+                    100% { top: calc(100% + 280px); }
                 }
-                @keyframes shine-sweep-h {
-                    0% {
-                        left: -200px;
-                    }
-                    100% {
-                        left: 100%;
-                    }
+                @keyframes beam-right {
+                    0%   { left: -280px; }
+                    100% { left: calc(100% + 280px); }
                 }
-                .animate-shine-sweep-v {
-                    animation: shine-sweep-v 15s infinite linear;
-                }
-                .animate-shine-sweep-v-delayed {
-                    animation: shine-sweep-v 15s infinite linear;
-                    animation-delay: 7.5s;
-                }
-                .animate-shine-sweep-h {
-                    animation: shine-sweep-h 10s infinite linear;
-                }
+                .grid-beam-v { position: absolute; width: 1px; height: 280px; animation: beam-down linear infinite; }
+                .grid-beam-h { position: absolute; height: 1px; width: 280px; animation: beam-right linear infinite; }
             `}</style>
 
-            {/* Grid Background with Sweeping Shine Borders */}
+            {/* Grid Background — full page coverage */}
             <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
-                {/* Framed grid in the center of side borders */}
-                <div className="absolute inset-y-0 left-4 md:left-[8%] right-4 md:right-[8%] bg-grid-pattern opacity-70 dark:opacity-100 border-x border-slate-200/40 dark:border-slate-800/40 z-0" />
-                
-                {/* Horizontal Top Edge Shine Line (framed right below navbar) */}
-                <div className="absolute top-[72px] left-4 md:left-[8%] right-4 md:right-[8%] h-[1px] bg-slate-200/40 dark:bg-slate-800/40 z-[2] overflow-hidden">
-                    <div className="absolute top-0 h-full w-[200px] bg-gradient-to-r from-transparent via-[#2563EB] dark:via-blue-500 to-transparent animate-shine-sweep-h" />
-                </div>
+                {/* Full-page grid pattern */}
+                <div className="absolute inset-0 bg-grid-pattern" />
 
-                {/* Vertical Left Edge Shine Line */}
-                <div className="absolute inset-y-0 left-4 md:left-[8%] w-[1px] z-[2] overflow-hidden">
-                    <div className="absolute left-0 w-full h-[250px] bg-gradient-to-b from-transparent via-[#2563EB] dark:via-blue-500 to-transparent animate-shine-sweep-v" />
-                </div>
+                {/* ── Vertical beams — positions are exact multiples of 50px (grid cell size) ── */}
+                {/* 200px = 4 × 50   */}
+                <div className="grid-beam-v bg-gradient-to-b from-transparent via-blue-500/70 to-transparent"
+                    style={{ left: '200px', animationDuration: '14s', animationDelay: '0s' }} />
+                {/* 450px = 9 × 50   */}
+                <div className="grid-beam-v bg-gradient-to-b from-transparent via-indigo-400/60 to-transparent"
+                    style={{ left: '450px', animationDuration: '19s', animationDelay: '-7s' }} />
+                {/* 700px = 14 × 50  */}
+                <div className="grid-beam-v bg-gradient-to-b from-transparent via-blue-500/55 to-transparent"
+                    style={{ left: '700px', animationDuration: '16s', animationDelay: '-12s' }} />
+                {/* 1000px = 20 × 50 */}
+                <div className="grid-beam-v bg-gradient-to-b from-transparent via-violet-400/50 to-transparent"
+                    style={{ left: '1000px', animationDuration: '22s', animationDelay: '-4s' }} />
+                {/* 1250px = 25 × 50 */}
+                <div className="grid-beam-v bg-gradient-to-b from-transparent via-blue-500/65 to-transparent"
+                    style={{ left: '1250px', animationDuration: '12s', animationDelay: '-9s' }} />
 
-                {/* Vertical Right Edge Shine Line */}
-                <div className="absolute inset-y-0 right-4 md:right-[8%] w-[1px] z-[2] overflow-hidden">
-                    <div className="absolute left-0 w-full h-[250px] bg-gradient-to-b from-transparent via-[#10B981] dark:via-emerald-400 to-transparent animate-shine-sweep-v-delayed" />
-                </div>
+                {/* ── Horizontal beams — positions are exact multiples of 50px ── */}
+                {/* 300px = 6 × 50  */}
+                <div className="grid-beam-h bg-gradient-to-r from-transparent via-blue-500/60 to-transparent"
+                    style={{ top: '300px', animationDuration: '11s', animationDelay: '-3s' }} />
+                {/* 700px = 14 × 50 */}
+                <div className="grid-beam-h bg-gradient-to-r from-transparent via-indigo-400/50 to-transparent"
+                    style={{ top: '700px', animationDuration: '17s', animationDelay: '-8s' }} />
+                {/* 1200px = 24 × 50 */}
+                <div className="grid-beam-h bg-gradient-to-r from-transparent via-blue-500/55 to-transparent"
+                    style={{ top: '1200px', animationDuration: '13s', animationDelay: '-1s' }} />
             </div>
+
             {/* Header Navbar - Fixed Glassmorphism */}
             <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-white/80 dark:bg-[#090D1A]/80 border-b border-slate-100 dark:border-slate-800/80 transition-all duration-200">
                 <div className="max-w-[1200px] mx-auto px-6 h-[72px] flex items-center justify-between">

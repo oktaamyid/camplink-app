@@ -37,6 +37,10 @@ class ProfileUpdateRequest extends FormRequest
             'experience' => ['nullable', 'array'],
             'education' => ['nullable', 'array'],
             'external_certificates' => ['nullable', 'array'],
+            'website_url' => ['nullable', 'string', 'max:255', 'url'],
+            'github_url' => ['nullable', 'string', 'max:255', 'url'],
+            'linkedin_url' => ['nullable', 'string', 'max:255', 'url'],
+            'instagram_url' => ['nullable', 'string', 'max:255', 'url'],
         ];
     }
 }

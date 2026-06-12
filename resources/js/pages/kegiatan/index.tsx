@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import CampLinkLayout from '@/layouts/camplink-layout';
 import { InisiatorRequestModal } from '@/components/inisiator-request-modal';
 import { type SharedData } from '@/types';
@@ -9,11 +10,8 @@ import {
     Search, 
     LayoutGrid, 
     List, 
-    Table, 
     ChevronLeft, 
     ChevronRight,
-    Users,
-    Clock,
     Plus
 } from 'lucide-react';
 import { useState, useEffect, useRef, useMemo } from 'react';
@@ -60,7 +58,7 @@ interface PaginationData<T> {
     current_page: number;
     last_page: number;
     total: number;
-    links: any[];
+    links: any[] /* eslint-disable-line @typescript-eslint/no-explicit-any */;
 }
 
 interface Filters {

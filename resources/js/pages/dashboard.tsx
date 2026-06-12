@@ -14,15 +14,12 @@ import {
     Check, 
     ShieldAlert,
     BadgeCheck,
-    ShieldX,
     Edit,
     LayoutGrid,
-    Plus,
     X,
     Megaphone,
     Flag,
     Star,
-    Shield,
     FileDown,
     FileSpreadsheet,
     Image as LucideImage,
@@ -34,7 +31,7 @@ import { useState } from 'react';
 
 interface Props {
     isAdmin: boolean;
-    stats: any;
+    stats: Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 export default function Dashboard({ isAdmin, stats }: Props) {
@@ -181,12 +178,12 @@ export default function Dashboard({ isAdmin, stats }: Props) {
     const users = stats.users || [];
     const activities = stats.activities || [];
 
-    const filteredUsers = users.filter((u: any) => 
+    const filteredUsers = users.filter((u: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => 
         u.name.toLowerCase().includes(userSearch.toLowerCase()) || 
         u.email.toLowerCase().includes(userSearch.toLowerCase())
     );
 
-    const filteredActivities = activities.filter((act: any) => 
+    const filteredActivities = activities.filter((act: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => 
         act.title.toLowerCase().includes(activitySearch.toLowerCase())
     );
 
@@ -330,18 +327,6 @@ export default function Dashboard({ isAdmin, stats }: Props) {
                                 </Card>
                                 <Card>
                                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-sm font-medium text-gray-700">Total Kegiatan</CardTitle>
-                                        <Activity className="size-4 text-gray-400" />
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="text-2xl font-bold text-gray-900">{stats.totalActivities}</div>
-                                        <p className="text-xs text-gray-500 mt-1">
-                                            Kegiatan kampus terposting
-                                        </p>
-                                    </CardContent>
-                                </Card>
-                                <Card>
-                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                         <CardTitle className="text-sm font-medium text-gray-700">Kegiatan Aktif</CardTitle>
                                         <CheckCircle2 className="size-4 text-green-500" />
                                     </CardHeader>
@@ -413,7 +398,7 @@ export default function Dashboard({ isAdmin, stats }: Props) {
                                             </thead>
                                             <tbody className="divide-y divide-gray-200">
                                                 {filteredUsers.length > 0 ? (
-                                                    filteredUsers.map((u: any) => (
+                                                    filteredUsers.map((u: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => (
                                                         <tr key={u.id} className="bg-white hover:bg-gray-50 transition-colors">
                                                             <td className="px-6 py-4 font-medium text-gray-900">{u.name}</td>
                                                             <td className="px-6 py-4">{u.email}</td>
@@ -522,7 +507,7 @@ export default function Dashboard({ isAdmin, stats }: Props) {
                                             </thead>
                                             <tbody className="divide-y divide-gray-200">
                                                 {filteredActivities.length > 0 ? (
-                                                    filteredActivities.map((act: any) => (
+                                                    filteredActivities.map((act: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => (
                                                         <tr key={act.id} className="bg-white hover:bg-gray-50 transition-colors">
                                                             <td className="px-6 py-4 font-medium text-gray-900">
                                                                 <Link 
@@ -668,7 +653,7 @@ export default function Dashboard({ isAdmin, stats }: Props) {
                                     <CardContent>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                             {stats.categories && stats.categories.length > 0 ? (
-                                                stats.categories.map((cat: any) => (
+                                                stats.categories.map((cat: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => (
                                                     <div key={cat.id} className="flex items-center justify-between p-3 rounded-lg border border-gray-100 bg-gray-50 hover:bg-white hover:shadow-sm transition-all group">
                                                         <div className="flex items-center gap-2">
                                                             <div className="p-1.5 rounded-md bg-white border border-gray-100 text-gray-400">
@@ -774,7 +759,7 @@ export default function Dashboard({ isAdmin, stats }: Props) {
                                                     <label className="text-sm font-bold text-gray-700">Tipe Pengumuman</label>
                                                     <select
                                                         value={announcementData.type}
-                                                        onChange={(e) => setAnnouncementData('type', e.target.value as any)}
+                                                        onChange={(e) => setAnnouncementData('type', e.target.value as "general" | "activity")}
                                                         className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 focus:border-[#2F3E8F] focus:outline-none focus:ring-2 focus:ring-[#2F3E8F]/20 transition-all"
                                                     >
                                                         <option value="general">Umum (Semua User)</option>
@@ -831,7 +816,7 @@ export default function Dashboard({ isAdmin, stats }: Props) {
                                     <CardContent>
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                             {stats.announcements && stats.announcements.length > 0 ? (
-                                                stats.announcements.map((ann: any) => (
+                                                stats.announcements.map((ann: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => (
                                                     <div key={ann.id} className="group relative bg-white rounded-2xl border border-gray-100 p-4 hover:shadow-md transition-all">
                                                         <div className="flex gap-4 items-start">
                                                             {ann.thumbnail_url && (
@@ -903,7 +888,7 @@ export default function Dashboard({ isAdmin, stats }: Props) {
                                             </thead>
                                             <tbody className="divide-y divide-gray-200">
                                                 {stats.reports && stats.reports.length > 0 ? (
-                                                    stats.reports.map((rep: any) => (
+                                                    stats.reports.map((rep: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => (
                                                         <tr key={rep.id} className="bg-white hover:bg-gray-50 transition-colors">
                                                             <td className="px-6 py-4 font-medium text-gray-900">{rep.activity.title}</td>
                                                             <td className="px-6 py-4">{rep.reporter.name}</td>
@@ -981,7 +966,7 @@ export default function Dashboard({ isAdmin, stats }: Props) {
                                 <CardContent>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         {stats.reviews && stats.reviews.length > 0 ? (
-                                            stats.reviews.map((rev: any) => (
+                                            stats.reviews.map((rev: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => (
                                                 <div key={rev.id} className="p-4 rounded-2xl border border-gray-100 bg-gray-50 group hover:bg-white hover:shadow-md transition-all">
                                                     <div className="flex justify-between items-start mb-3">
                                                         <div className="flex items-center gap-1 text-amber-500">
@@ -1001,7 +986,7 @@ export default function Dashboard({ isAdmin, stats }: Props) {
                                                     <div className="flex items-center justify-between border-t border-gray-100 pt-3 mt-auto">
                                                         <div className="flex flex-col">
                                                             <span className="text-[10px] font-bold text-gray-900">{rev.user.name}</span>
-                                                            <span className="text-[9px] text-gray-500 truncate max-w-[150px]">{rev.activity.title}</span>
+                                                            <span className="text-[9px] text-gray-500 truncate max-w-37.5">{rev.activity.title}</span>
                                                         </div>
                                                         <span className="text-[9px] text-gray-400">
                                                             {new Date(rev.created_at).toLocaleDateString('id-ID')}
@@ -1087,7 +1072,7 @@ export default function Dashboard({ isAdmin, stats }: Props) {
                                 <CardContent className="p-0">
                                     {stats.recentActivity && stats.recentActivity.length > 0 ? (
                                         <div className="divide-y divide-gray-50">
-                                            {stats.recentActivity.map((activity: any) => (
+                                            {stats.recentActivity.map((activity: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => (
                                                 <div key={activity.type + activity.id} className="flex items-center gap-4 p-5 hover:bg-gray-50 transition-colors group">
                                                     <div className={`rounded-2xl p-3 shadow-sm transition-transform group-hover:scale-110 ${activity.type === 'team_application' ? 'bg-blue-50 text-blue-600' : 'bg-emerald-50 text-emerald-600'}`}>
                                                         {activity.type === 'team_application' ? <UserPlus className="size-5" /> : <Activity className="size-5" />}
@@ -1136,7 +1121,7 @@ export default function Dashboard({ isAdmin, stats }: Props) {
                                             <Star className="size-10 text-[#2F3E8F]/20" />
                                         </div>
                                         <h3 className="text-sm font-bold text-gray-900 mb-1">Cari Kegiatan Lain?</h3>
-                                        <p className="text-xs text-gray-500 mb-6 max-w-[200px]">Temukan ratusan kegiatan menarik lainnya di halaman Eksplorasi.</p>
+                                        <p className="text-xs text-gray-500 mb-6 max-w-50">Temukan ratusan kegiatan menarik lainnya di halaman Eksplorasi.</p>
                                         <Link 
                                             href="/kegiatan"
                                             className="inline-flex items-center gap-2 rounded-xl bg-[#2F3E8F] px-6 py-2.5 text-xs font-bold text-white hover:bg-[#243070] transition-all shadow-md active:scale-95"

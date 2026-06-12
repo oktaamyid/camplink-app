@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import CampLinkLayout from '@/layouts/camplink-layout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Edit3, MapPin, Mail, Globe, Github, Linkedin, Instagram, Plus, Bookmark, X, Check, Briefcase, GraduationCap, Award, Trash2, Calendar, MessageSquare, PlusCircle } from 'lucide-react';
@@ -36,6 +38,10 @@ export default function Profil({ profileData }: { profileData: any }) {
         experience: profileData.experience || [],
         education: profileData.education || [],
         external_certificates: profileData.external_certificates || [],
+        website_url: profileData.website_url,
+        github_url: profileData.github_url,
+        linkedin_url: profileData.linkedin_url,
+        instagram_url: profileData.instagram_url,
     };
 
     const isOwnProfile = !profile.id || auth?.user?.id === profile.id;
@@ -98,7 +104,7 @@ export default function Profil({ profileData }: { profileData: any }) {
     };
 
     const handleSaveExperience = () => {
-        let updated = [...profile.experience];
+        const updated = [...profile.experience];
         const item = { title: expTitle, company: expCompany, duration: expDuration, description: expDescription };
         if (expIndex !== null) {
             updated[expIndex] = item;
@@ -113,7 +119,7 @@ export default function Profil({ profileData }: { profileData: any }) {
 
     const handleDeleteExperience = (idx: number) => {
         if (!confirm('Apakah Anda yakin ingin menghapus pengalaman ini?')) return;
-        const updated = profile.experience.filter((_, i) => i !== idx);
+        const updated = profile.experience.filter((_: any, i: number) => i !== idx);
         router.patch(route('profile.update'), { experience: updated }, { preserveScroll: true });
     };
 
@@ -136,7 +142,7 @@ export default function Profil({ profileData }: { profileData: any }) {
     };
 
     const handleSaveEducation = () => {
-        let updated = [...profile.education];
+        const updated = [...profile.education];
         const item = { school: eduSchool, degree: eduDegree, field_of_study: eduField, duration: eduDuration };
         if (eduIndex !== null) {
             updated[eduIndex] = item;
@@ -151,7 +157,7 @@ export default function Profil({ profileData }: { profileData: any }) {
 
     const handleDeleteEducation = (idx: number) => {
         if (!confirm('Apakah Anda yakin ingin menghapus pendidikan ini?')) return;
-        const updated = profile.education.filter((_, i) => i !== idx);
+        const updated = profile.education.filter((_: any, i: number) => i !== idx);
         router.patch(route('profile.update'), { education: updated }, { preserveScroll: true });
     };
 
@@ -176,7 +182,7 @@ export default function Profil({ profileData }: { profileData: any }) {
     };
 
     const handleSaveCertificate = () => {
-        let updated = [...profile.external_certificates];
+        const updated = [...profile.external_certificates];
         const item = { name: certName, issuing_organization: certIssuer, issue_date: certDate, credential_id: certId, credential_url: certUrl };
         if (certIndex !== null) {
             updated[certIndex] = item;
@@ -191,7 +197,7 @@ export default function Profil({ profileData }: { profileData: any }) {
 
     const handleDeleteCertificate = (idx: number) => {
         if (!confirm('Apakah Anda yakin ingin menghapus sertifikat ini?')) return;
-        const updated = profile.external_certificates.filter((_, i) => i !== idx);
+        const updated = profile.external_certificates.filter((_: any, i: number) => i !== idx);
         router.patch(route('profile.update'), { external_certificates: updated }, { preserveScroll: true });
     };
 
@@ -229,26 +235,40 @@ export default function Profil({ profileData }: { profileData: any }) {
 
                         <div className="space-y-2">
                             <div className="flex items-center gap-2 text-sm text-gray-500">
-                                <MapPin className="size-4 text-gray-400 flex-shrink-0" />
+                                <MapPin className="size-4 text-gray-400 shrink-0" />
                                 {profile.location}
                             </div>
                             <div className="flex items-center gap-2 text-sm text-gray-500">
-                                <Mail className="size-4 text-gray-400 flex-shrink-0" />
+                                <Mail className="size-4 text-gray-400 shrink-0" />
                                 <span className="truncate">{profile.email}</span>
                             </div>
                         </div>
 
                         {/* Social links */}
-                        <div className="mt-4 flex items-center gap-2">
-                            {[Globe, Github, Linkedin, Instagram].map((Icon, i) => (
-                                <button
-                                    key={i}
-                                    className="flex size-8 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-[#2F3E8F] hover:text-[#2F3E8F] transition-colors"
-                                >
-                                    <Icon className="size-4" />
-                                </button>
-                            ))}
-                        </div>
+                        {(profile.website_url || profile.github_url || profile.linkedin_url || profile.instagram_url) && (
+                            <div className="mt-4 flex items-center gap-2">
+                                {profile.website_url && (
+                                    <a href={profile.website_url} target="_blank" rel="noopener noreferrer" className="flex size-8 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-[#2F3E8F] hover:text-[#2F3E8F] transition-colors" title="Website / Portfolio">
+                                        <Globe className="size-4" />
+                                    </a>
+                                )}
+                                {profile.github_url && (
+                                    <a href={profile.github_url} target="_blank" rel="noopener noreferrer" className="flex size-8 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-[#2F3E8F] hover:text-[#2F3E8F] transition-colors" title="GitHub">
+                                        <Github className="size-4" />
+                                    </a>
+                                )}
+                                {profile.linkedin_url && (
+                                    <a href={profile.linkedin_url} target="_blank" rel="noopener noreferrer" className="flex size-8 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-[#2F3E8F] hover:text-[#2F3E8F] transition-colors" title="LinkedIn">
+                                        <Linkedin className="size-4" />
+                                    </a>
+                                )}
+                                {profile.instagram_url && (
+                                    <a href={profile.instagram_url} target="_blank" rel="noopener noreferrer" className="flex size-8 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-[#2F3E8F] hover:text-[#2F3E8F] transition-colors" title="Instagram">
+                                        <Instagram className="size-4" />
+                                    </a>
+                                )}
+                            </div>
+                        )}
 
                         {!isOwnProfile && (
                             <button
@@ -424,7 +444,7 @@ export default function Profil({ profileData }: { profileData: any }) {
                             {profile.experience && profile.experience.length > 0 ? (
                                 profile.experience.map((exp: any, idx: number) => (
                                     <div key={idx} className="flex gap-4 border-l-2 border-gray-100 pl-4 relative group">
-                                        <div className="absolute size-3 bg-[#2F3E8F] rounded-full -left-[7px] top-1.5" />
+                                        <div className="absolute size-3 bg-[#2F3E8F] rounded-full -left-1.75 top-1.5" />
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-start justify-between gap-4">
                                                 <div>
@@ -477,7 +497,7 @@ export default function Profil({ profileData }: { profileData: any }) {
                             {profile.education && profile.education.length > 0 ? (
                                 profile.education.map((edu: any, idx: number) => (
                                     <div key={idx} className="flex gap-4 border-l-2 border-gray-100 pl-4 relative group">
-                                        <div className="absolute size-3 bg-[#2F3E8F] rounded-full -left-[7px] top-1.5" />
+                                        <div className="absolute size-3 bg-[#2F3E8F] rounded-full -left-1.75 top-1.5" />
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-start justify-between gap-4">
                                                 <div>
@@ -569,7 +589,7 @@ export default function Profil({ profileData }: { profileData: any }) {
                         <div className="space-y-4">
                             {profile.events && profile.events.length > 0 ? profile.events.map((event: any, i: number) => (
                                 <div key={i} className="flex items-start gap-3">
-                                    <div className="mt-1.5 size-1.5 flex-shrink-0 rounded-full bg-[#2F3E8F]" />
+                                    <div className="mt-1.5 size-1.5 shrink-0 rounded-full bg-[#2F3E8F]" />
                                     <div>
                                         <p className="text-sm text-gray-700">Mendaftar kegiatan <span className="font-semibold">{event.title}</span></p>
                                         <p className="text-xs text-gray-400 mt-0.5">{event.time}</p>

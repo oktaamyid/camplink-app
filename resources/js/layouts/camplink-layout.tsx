@@ -25,7 +25,6 @@ import {
     BookOpen,
     Home,
     LayoutDashboard,
-    LogOut,
     MessageSquare,
     Search,
     Settings,
@@ -33,7 +32,6 @@ import {
     Users,
     Power,
     Bookmark,
-    ChevronDown,
     ChevronUp,
     ShieldAlert,
     Megaphone
@@ -62,7 +60,12 @@ export default function CampLinkLayout({ children }: CampLinkLayoutProps) {
     const { auth } = page.props;
     const [searchQuery, setSearchQuery] = useState('');
 
-    const notifications = (auth?.user?.notifications as Record<string, unknown>[]) || [];
+    type NotificationItem = {
+        id: string;
+        created_at: string;
+        data?: { action_url?: string; message?: string };
+    };
+    const notifications = (auth?.user?.notifications as NotificationItem[]) || [];
     const unreadCount = (auth?.user?.unread_notifications_count as number) || 0;
     const unreadMessagesCount = (auth?.user?.unread_messages_count as number) || 0;
     const pendingInisiatorsCount = (auth?.user?.pending_inisiators_count as number) || 0;
@@ -131,7 +134,7 @@ export default function CampLinkLayout({ children }: CampLinkLayoutProps) {
             <div className="flex h-screen w-full bg-[#F5F5F5] dark:bg-[#090D1A] font-sans selection:bg-[#2F3E8F]/10 text-[#111111] dark:text-slate-100">
                 {/* Sidebar */}
                 <Sidebar collapsible="icon" className="bg-transparent border-none">
-                    <div className="flex flex-col h-full bg-white dark:bg-[#111625] rounded-[24px] shadow-sm border border-[#EAEAEA] dark:border-slate-800/80 group-data-[state=expanded]:m-2 transition-all duration-300">
+                    <div className="flex flex-col h-full bg-white dark:bg-[#111625] rounded-3xl shadow-sm border border-[#EAEAEA] dark:border-slate-800/80 group-data-[state=expanded]:m-2 transition-all duration-300">
                         
                         {/* Sidebar Header - Brand Logo */}
                         <SidebarHeader className="p-4 border-b border-[#F0F0F0] dark:border-slate-800/80 flex flex-row items-center justify-center group-data-[state=expanded]:justify-start group-data-[state=expanded]:px-6 h-16 transition-all">
@@ -146,7 +149,7 @@ export default function CampLinkLayout({ children }: CampLinkLayoutProps) {
                                 {navGroups.map((group) => (
                                     <div key={group.label} className="flex flex-col gap-1.5">
                                         <div className="px-3 mb-1 group-data-[state=collapsed]:hidden">
-                                            <span className="text-[10px] font-bold text-[#B0B0B0] dark:text-slate-500 tracking-[0.1em] uppercase">{group.label}</span>
+                                            <span className="text-[10px] font-bold text-[#B0B0B0] dark:text-slate-500 tracking-widest uppercase">{group.label}</span>
                                         </div>
                                         <div className="flex flex-col gap-0.5 items-center group-data-[state=expanded]:items-stretch">
                                             {group.items.map((item) => {
@@ -166,7 +169,7 @@ export default function CampLinkLayout({ children }: CampLinkLayoutProps) {
                                                         >
                                                             <Link href={item.href} className="flex items-center justify-between w-full">
                                                                 <div className="flex items-center gap-3 group-data-[state=collapsed]:gap-0 group-data-[state=collapsed]:justify-center w-full">
-                                                                    <item.icon className={`size-[18px] shrink-0 ${isActive ? 'text-[#2F3E8F]' : ''}`} />
+                                                                    <item.icon className={`size-4.5 shrink-0 ${isActive ? 'text-[#2F3E8F]' : ''}`} />
                                                                     <span className="text-[13px] group-data-[state=collapsed]:hidden whitespace-nowrap">{item.title}</span>
                                                                 </div>
                                                                 {item.badge !== undefined && item.badge > 0 && (
@@ -229,7 +232,7 @@ export default function CampLinkLayout({ children }: CampLinkLayoutProps) {
                                         </Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem asChild className="rounded-xl h-10 px-3 focus:bg-[#F8F9FB] dark:focus:bg-slate-800 cursor-pointer group">
-                                        <Link href="/pengaturan" className="flex items-center gap-3">
+                                        <Link href={route('profile.edit')} className="flex items-center gap-3">
                                             <Settings className="size-4 text-[#505050] dark:text-slate-400 group-focus:text-[#2F3E8F] dark:group-focus:text-slate-200" />
                                             <span className="text-sm font-semibold text-[#111111] dark:text-slate-200">Pengaturan</span>
                                         </Link>
@@ -254,12 +257,12 @@ export default function CampLinkLayout({ children }: CampLinkLayoutProps) {
 
                 {/* Main content */}
                 <SidebarInset className="flex flex-1 flex-col min-w-0 bg-transparent py-2 pr-2">
-                    <div className="flex flex-col h-full bg-white dark:bg-[#111625] rounded-[24px] shadow-sm border border-[#EAEAEA] dark:border-slate-800/80 overflow-hidden">
+                    <div className="flex flex-col h-full bg-white dark:bg-[#111625] rounded-3xl shadow-sm border border-[#EAEAEA] dark:border-slate-800/80 overflow-hidden">
                         {/* Top header */}
                         <header className="flex h-14 items-center gap-4 bg-white/80 dark:bg-[#111625]/80 backdrop-blur-md px-4 md:px-6 sticky top-0 z-20 border-b border-[#F0F0F0]/50 dark:border-slate-800/50">
                             <div className="flex items-center gap-2 bg-[#F8F9FB] dark:bg-slate-900 rounded-xl border border-[#EAEAEA] dark:border-slate-800 p-1 px-2 shadow-sm">
                                 <SidebarTrigger className="size-8 rounded-lg hover:bg-white dark:hover:bg-slate-800 text-[#787774] dark:text-slate-400 transition-colors" />
-                                <div className="h-4 w-[1px] bg-[#EAEAEA] dark:bg-slate-800" />
+                                <div className="h-4 w-px bg-[#EAEAEA] dark:bg-slate-800" />
                                 <div className="flex items-center gap-2 px-2 max-w-md group">
                                     <Search className="size-3.5 text-[#787774] dark:text-slate-400 transition-colors" />
                                     <input
@@ -297,7 +300,7 @@ export default function CampLinkLayout({ children }: CampLinkLayoutProps) {
                                                     Tidak ada notifikasi
                                                 </div>
                                             ) : (
-                                                notifications.map((notif: any) => (
+                                                notifications.map((notif) => (
                                                     <DropdownMenuItem 
                                                         key={notif.id} 
                                                         className="rounded-lg px-3 py-2 focus:bg-[#F8F9FB] dark:focus:bg-slate-800 cursor-pointer" 
@@ -318,7 +321,7 @@ export default function CampLinkLayout({ children }: CampLinkLayoutProps) {
                                     <MessageSquare className="size-4 text-[#787774] dark:text-slate-400 hover:text-[#111111] dark:hover:text-slate-200" />
                                 </Link>
 
-                                <div className="h-4 w-[1px] bg-[#EAEAEA] dark:bg-slate-800" />
+                                <div className="h-4 w-px bg-[#EAEAEA] dark:bg-slate-800" />
 
                                 <AppearanceToggleDropdown />
                             </div>

@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import CampLinkLayout from '@/layouts/camplink-layout';
 import { Head, Link, usePage, useForm, router } from '@inertiajs/react';
-import { ArrowLeft, MapPin, Calendar, Clock, Mail, Users, Plus, Trash2, X, MessageSquare, CheckCircle2, Bookmark, Star, ShieldCheck, Edit, Award, Download, Flag } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, Clock, Mail, Users, Plus, Trash2, X, MessageSquare, CheckCircle2, Bookmark, Star, Edit, Award, Download, Flag } from 'lucide-react';
 import { useState, FormEventHandler } from 'react';
 
 interface Category {
@@ -46,6 +47,7 @@ interface Activity {
     category: Category;
     creator: User;
     is_team_based?: boolean;
+    has_participants?: boolean;
     recruitment?: TeamRecruitment;
     reviews: ActivityReview[];
 }
@@ -105,7 +107,11 @@ export default function KegiatanDetail({ activity, userApplication, userRegistra
     const [successMessage, setSuccessMessage] = useState('');
 
     // Form for reviews
-    const { data: reviewData, setData: setReviewData, post: postReview, processing: reviewProcessing, errors: reviewErrors, reset: resetReview } = useForm({
+    const { data: reviewData, setData: setReviewData, post: postReview, processing: reviewProcessing, errors: reviewErrors, reset: resetReview } = useForm<{
+        rating: number;
+        review: string;
+        is_anonymous: boolean;
+    }>({
         rating: 5,
         review: '',
         is_anonymous: false,

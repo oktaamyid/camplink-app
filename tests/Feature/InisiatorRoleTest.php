@@ -31,8 +31,8 @@ class InisiatorRoleTest extends TestCase
 
         $response = $this->actingAs($user)->get(route('kegiatan.buat'));
 
-        $response->assertStatus(200);
-        $response->assertInertia(fn ($page) => $page->component('inisiator/request'));
+        $response->assertRedirect(route('kegiatan.index'));
+        $response->assertSessionHas('error');
     }
 
     public function test_mahasiswa_can_submit_inisiator_request()

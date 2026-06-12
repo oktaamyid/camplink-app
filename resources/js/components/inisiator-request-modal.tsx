@@ -1,6 +1,5 @@
 import { useForm, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -13,10 +12,17 @@ export function InisiatorRequestModal() {
     const { auth } = usePage<SharedData>().props;
     const [open, setOpen] = useState(false);
     
-    const existingRequest = auth.user?.inisiator_request;
+    type InisiatorRequest = {
+        status: 'pending' | 'approved' | 'rejected';
+        admin_notes?: string;
+        proposal_path: string;
+        ktm_path: string;
+    };
+    
+    const existingRequest = auth.user?.inisiator_request as InisiatorRequest | undefined;
     const alreadyHasRole = auth.user?.role === 'inisiator' || auth.user?.role === 'admin';
 
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const { setData, post, processing, errors, reset } = useForm({
         proposal: null as File | null,
         ktm: null as File | null,
     });
@@ -43,7 +49,7 @@ export function InisiatorRequestModal() {
                     {buttonText}
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+            <DialogContent className="sm:max-w-150 max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle className="text-2xl font-bold text-[#2F3E8F]">
                         {existingRequest ? 'Status Pengajuan Inisiator' : 'Jadi Inisiator Kegiatan'}

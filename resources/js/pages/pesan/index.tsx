@@ -30,6 +30,7 @@ interface PageProps extends SharedData {
         id: number;
         title: string;
         type: 'direct' | 'team';
+        other_user_id?: number | null;
     } | null;
     messages: Message[];
 }
@@ -251,9 +252,7 @@ export default function Pesan() {
                                     {activeConversation.type === 'direct' && activeConversation.other_user_id ? (
                                         <Link 
                                             href={route('profil.index', activeConversation.other_user_id)}
-                                            className={`flex size-9 items-center justify-center rounded-xl text-white text-xs font-semibold hover:opacity-90 transition-opacity shrink-0 ${
-                                                activeConversation.type === 'team' ? 'bg-indigo-600' : 'bg-[#2F3E8F]'
-                                            }`}
+                                            className="flex size-9 items-center justify-center rounded-xl text-white text-xs font-semibold hover:opacity-90 transition-opacity shrink-0 bg-[#2F3E8F]"
                                         >
                                             {getInitials(activeConversation.title)}
                                         </Link>

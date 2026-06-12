@@ -29,6 +29,8 @@ export default function KelolaSertifikat({ activity, participants }: Props) {
         certificates: {},
     });
 
+    const formErrors = errors as Record<string, string | undefined>;
+
     const [selectedFileNames, setSelectedFileNames] = useState<Record<number, string>>({});
 
     const handleFileChange = (userId: number, file: File | null) => {
@@ -156,8 +158,8 @@ export default function KelolaSertifikat({ activity, participants }: Props) {
                                                 onChange={(e) => handleFileChange(participant.user_id, e.target.files?.[0] || null)}
                                             />
                                         </label>
-                                        {errors[`certificates.${participant.user_id}`] && (
-                                            <p className="mt-1 text-xs text-red-500">{errors[`certificates.${participant.user_id}`]}</p>
+                                        {formErrors[`certificates.${participant.user_id}`] && (
+                                            <p className="mt-1 text-xs text-red-500">{formErrors[`certificates.${participant.user_id}`]}</p>
                                         )}
                                     </td>
                                 </tr>
