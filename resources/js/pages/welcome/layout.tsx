@@ -199,6 +199,68 @@ export default function WelcomeLayout({ children }: { children: React.ReactNode 
 
     return (
         <div className="min-h-screen bg-[#FDFDFD] dark:bg-[#090D1A] text-slate-700 dark:text-slate-300 transition-colors duration-300 font-sans antialiased relative overflow-x-hidden">
+            <style>{`
+                .bg-grid-pattern {
+                    background-size: 50px 50px;
+                    background-image: 
+                        linear-gradient(to right, rgba(99, 102, 241, 0.05) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(99, 102, 241, 0.05) 1px, transparent 1px);
+                    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 150px, black calc(100% - 150px), transparent 100%);
+                    mask-image: linear-gradient(to bottom, transparent 0%, black 150px, black calc(100% - 150px), transparent 100%);
+                }
+                .dark .bg-grid-pattern {
+                    background-image: 
+                        linear-gradient(to right, rgba(99, 102, 241, 0.08) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(99, 102, 241, 0.08) 1px, transparent 1px);
+                }
+                @keyframes shine-sweep-v {
+                    0% {
+                        top: -250px;
+                    }
+                    100% {
+                        top: 100%;
+                    }
+                }
+                @keyframes shine-sweep-h {
+                    0% {
+                        left: -200px;
+                    }
+                    100% {
+                        left: 100%;
+                    }
+                }
+                .animate-shine-sweep-v {
+                    animation: shine-sweep-v 15s infinite linear;
+                }
+                .animate-shine-sweep-v-delayed {
+                    animation: shine-sweep-v 15s infinite linear;
+                    animation-delay: 7.5s;
+                }
+                .animate-shine-sweep-h {
+                    animation: shine-sweep-h 10s infinite linear;
+                }
+            `}</style>
+
+            {/* Grid Background with Sweeping Shine Borders */}
+            <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+                {/* Framed grid in the center of side borders */}
+                <div className="absolute inset-y-0 left-4 md:left-[8%] right-4 md:right-[8%] bg-grid-pattern opacity-70 dark:opacity-100 border-x border-slate-200/40 dark:border-slate-800/40 z-0" />
+                
+                {/* Horizontal Top Edge Shine Line (framed right below navbar) */}
+                <div className="absolute top-[72px] left-4 md:left-[8%] right-4 md:right-[8%] h-[1px] bg-slate-200/40 dark:bg-slate-800/40 z-[2] overflow-hidden">
+                    <div className="absolute top-0 h-full w-[200px] bg-gradient-to-r from-transparent via-[#2563EB] dark:via-blue-500 to-transparent animate-shine-sweep-h" />
+                </div>
+
+                {/* Vertical Left Edge Shine Line */}
+                <div className="absolute inset-y-0 left-4 md:left-[8%] w-[1px] z-[2] overflow-hidden">
+                    <div className="absolute left-0 w-full h-[250px] bg-gradient-to-b from-transparent via-[#2563EB] dark:via-blue-500 to-transparent animate-shine-sweep-v" />
+                </div>
+
+                {/* Vertical Right Edge Shine Line */}
+                <div className="absolute inset-y-0 right-4 md:right-[8%] w-[1px] z-[2] overflow-hidden">
+                    <div className="absolute left-0 w-full h-[250px] bg-gradient-to-b from-transparent via-[#10B981] dark:via-emerald-400 to-transparent animate-shine-sweep-v-delayed" />
+                </div>
+            </div>
             {/* Header Navbar - Fixed Glassmorphism */}
             <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-white/80 dark:bg-[#090D1A]/80 border-b border-slate-100 dark:border-slate-800/80 transition-all duration-200">
                 <div className="max-w-[1200px] mx-auto px-6 h-[72px] flex items-center justify-between">
@@ -215,11 +277,10 @@ export default function WelcomeLayout({ children }: { children: React.ReactNode 
                             <a
                                 key={item.label}
                                 href={item.href}
-                                className={`text-sm font-semibold transition-all duration-200 relative py-1.5 ${
-                                    item.active
+                                className={`text-sm font-semibold transition-all duration-200 relative py-1.5 ${item.active
                                         ? 'text-[#2563EB] dark:text-blue-500 font-bold'
                                         : 'text-slate-600 dark:text-slate-400 hover:text-[#2563EB] dark:hover:text-blue-500'
-                                }`}
+                                    }`}
                             >
                                 {item.label}
                                 {item.active && (
@@ -322,7 +383,7 @@ export default function WelcomeLayout({ children }: { children: React.ReactNode 
             {/* Detailed Multi-Column Footer */}
             <footer className="border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-[#070A13] py-16 relative z-10">
                 <div className="max-w-[1200px] mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
-                    
+
                     {/* Col 1: Brand Info */}
                     <div className="lg:col-span-2 space-y-4 pr-0 lg:pr-8">
                         <CampLinkLogo textClassName="font-extrabold text-[#0F172A] dark:text-white text-xl" />
@@ -384,9 +445,9 @@ export default function WelcomeLayout({ children }: { children: React.ReactNode 
                         <h4 className="text-sm font-bold text-slate-800 dark:text-white">Dapatkan update terbaru</h4>
                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Berlangganan newsletter Camplink.</p>
                         <div className="flex items-center gap-2 mt-3">
-                            <input 
-                                type="email" 
-                                placeholder="Masukkan email kamu" 
+                            <input
+                                type="email"
+                                placeholder="Masukkan email kamu"
                                 className="h-10 px-4 flex-1 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111625] text-xs text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500"
                             />
                             <button className="h-10 w-10 flex items-center justify-center rounded-lg bg-[#2563EB] hover:bg-blue-700 text-white transition-colors shrink-0">
@@ -394,7 +455,7 @@ export default function WelcomeLayout({ children }: { children: React.ReactNode 
                             </button>
                         </div>
                     </div>
-                    
+
                     <div className="text-xs text-slate-400 dark:text-slate-500 md:self-end">
                         <p>© 2025 CampLink. Semua hak dilindungi.</p>
                     </div>
@@ -410,12 +471,12 @@ export default function WelcomeLayout({ children }: { children: React.ReactNode 
                             Masukkan email dan kata sandi Anda untuk masuk ke akun Anda.
                         </DialogDescription>
                     </DialogHeader>
-                    <LoginFormModal 
-                        onSuccess={() => setLoginOpen(false)} 
+                    <LoginFormModal
+                        onSuccess={() => setLoginOpen(false)}
                         switchToRegister={() => {
                             setLoginOpen(false);
                             setRegisterOpen(true);
-                        }} 
+                        }}
                     />
                 </DialogContent>
             </Dialog>
@@ -429,12 +490,12 @@ export default function WelcomeLayout({ children }: { children: React.ReactNode 
                             Masukkan detail Anda di bawah ini untuk mendaftar akun CampLink.
                         </DialogDescription>
                     </DialogHeader>
-                    <RegisterFormModal 
-                        onSuccess={() => setRegisterOpen(false)} 
+                    <RegisterFormModal
+                        onSuccess={() => setRegisterOpen(false)}
                         switchToLogin={() => {
                             setRegisterOpen(false);
                             setLoginOpen(true);
-                        }} 
+                        }}
                     />
                 </DialogContent>
             </Dialog>
