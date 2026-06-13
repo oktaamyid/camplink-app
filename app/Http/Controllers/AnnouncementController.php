@@ -57,12 +57,12 @@ class AnnouncementController extends Controller
             'content' => $validated['content'],
             'type' => $validated['type'],
             'activity_id' => $validated['activity_id'],
-            'creator_id' => auth()->id(),
+            'creator_id' => request()->user()->id,
             'is_active' => true,
         ];
 
         if ($request->hasFile('thumbnail')) {
-            $path = $request->file('thumbnail')->store('announcements/thumbnails', 'public');
+            $path = $request->file('thumbnail')->storePublicly('announcements/thumbnails');
             $data['thumbnail_url'] = Storage::url($path);
         }
 
@@ -81,7 +81,7 @@ class AnnouncementController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('announcements/content', 'public');
+            $path = $request->file('image')->storePublicly('announcements/content');
 
             return response()->json([
                 'url' => Storage::url($path),
@@ -98,7 +98,7 @@ class AnnouncementController extends Controller
     {
         if ($announcement->thumbnail_url) {
             $oldPath = str_replace('/storage/', '', $announcement->thumbnail_url);
-            Storage::disk('public')->delete($oldPath);
+            Storage::delete($oldPath);
         }
 
         $announcement->delete();

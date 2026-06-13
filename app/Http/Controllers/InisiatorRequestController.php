@@ -17,7 +17,7 @@ class InisiatorRequestController extends Controller
 {
     public function create(): Response
     {
-        $user = auth()->user();
+        $user = request()->user();
 
         // If already inisiator or admin, redirect
         if ($user->isInisiator() || $user->isAdmin()) {
@@ -36,7 +36,7 @@ class InisiatorRequestController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $user = auth()->user();
+        $user = request()->user();
 
         if ($user->isInisiator() || $user->isAdmin()) {
             return back()->with('error', 'Anda sudah memiliki hak akses inisiator.');
@@ -52,8 +52,8 @@ class InisiatorRequestController extends Controller
             return back()->with('error', 'Anda masih memiliki permohonan yang sedang diproses.');
         }
 
-        $proposalPath = $request->file('proposal')->store('inisiator_requests/proposals', 'public');
-        $ktmPath = $request->file('ktm')->store('inisiator_requests/ktm', 'public');
+        $proposalPath = $request->file('proposal')->storePublicly('inisiator_requests/proposals');
+        $ktmPath = $request->file('ktm')->storePublicly('inisiator_requests/ktm');
 
         $inisiatorRequest = InisiatorRequest::updateOrCreate(
             ['user_id' => $user->id],

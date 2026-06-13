@@ -24,12 +24,12 @@ class ActivityController extends Controller
 
         // Tab Filter: All, Saved, or Mine
         $tab = $request->input('tab', 'all');
-        if ($tab === 'saved' && auth()->check()) {
+        if ($tab === 'saved' && request()->user()) {
             $query->whereHas('bookmarks', function ($q) {
-                $q->where('user_id', auth()->id());
+                $q->where('user_id', request()->user()->id);
             });
-        } elseif ($tab === 'mine' && auth()->check()) {
-            $query->where('creator_id', auth()->id());
+        } elseif ($tab === 'mine' && request()->user()) {
+            $query->where('creator_id', request()->user()->id);
         } else {
             $query->where('status', 'active');
         }
@@ -74,8 +74,8 @@ class ActivityController extends Controller
         $allCategories = Category::all();
 
         $userBookmarks = [];
-        if (auth()->check()) {
-            $userBookmarks = auth()->user()->bookmarks()->pluck('activity_id')->toArray();
+        if (request()->user()) {
+            $userBookmarks = request()->user()->bookmarks()->pluck('activity_id')->toArray();
         }
 
         // Add is_bookmarked helper
@@ -95,7 +95,7 @@ class ActivityController extends Controller
 
     public function create()
     {
-        if (! auth()->user()->isAdmin() && ! auth()->user()->isInisiator()) {
+        if (! request()->user()->isAdmin() && ! request()->user()->isInisiator()) {
             return redirect()->route('kegiatan.index')->with('error', 'Anda harus menjadi inisiator untuk membuat kegiatan.');
         }
 
@@ -109,11 +109,11 @@ class ActivityController extends Controller
     public function edit(Activity $activity): Response
     {
         // Allow creator or admin
-        if (auth()->id() !== $activity->creator_id && ! auth()->user()->isAdmin()) {
+        if (request()->user()->id !== $activity->creator_id && ! request()->user()->isAdmin()) {
             abort(403);
         }
 
-        if (! auth()->user()->isAdmin() && ! auth()->user()->isInisiator()) {
+        if (! request()->user()->isAdmin() && ! request()->user()->isInisiator()) {
             abort(403);
         }
 
@@ -128,7 +128,7 @@ class ActivityController extends Controller
     public function update(Activity $activity, StoreActivityRequest $request): RedirectResponse
     {
         // Allow creator or admin
-        if (auth()->id() !== $activity->creator_id && ! auth()->user()->isAdmin()) {
+        if (request()->user()->id !== $activity->creator_id && ! request()->user()->isAdmin()) {
             abort(403);
         }
 
@@ -155,10 +155,10 @@ class ActivityController extends Controller
             // Delete old poster if exists
             if ($activity->poster_url) {
                 $oldPath = str_replace('/storage/', '', $activity->poster_url);
-                Storage::disk('public')->delete($oldPath);
+                Storage::delete($oldPath);
             }
 
-            $path = $request->file('poster')->store('posters', 'public');
+            $path = $request->file('poster')->storePublicly('posters');
             $data['poster_url'] = Storage::url($path);
         }
 
@@ -173,7 +173,7 @@ class ActivityController extends Controller
 
         $posterUrl = null;
         if ($request->hasFile('poster')) {
-            $path = $request->file('poster')->store('posters', 'public');
+            $path = $request->file('poster')->storePublicly('posters');
             $posterUrl = Storage::url($path);
         }
 

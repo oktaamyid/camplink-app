@@ -75,7 +75,7 @@ class CertificateController extends Controller
                     ->exists();
 
                 if ($isRegistered && $file) {
-                    $path = $file->store('certificates', 'public');
+                    $path = $file->storePublicly('certificates');
                     $fileUrl = Storage::url($path);
 
                     // Check if exists
