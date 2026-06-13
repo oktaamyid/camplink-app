@@ -173,6 +173,7 @@
 }
 
 .dark {
+    color-scheme: dark;
     --background: oklch(0.13 0.02 250);
     --foreground: oklch(0.95 0.01 250);
     --card: oklch(0.17 0.03 250);
@@ -266,7 +267,9 @@
     }
 }
 
-
+html {
+    scroll-behavior: smooth;
+}
 
 @layer base {
     * {

@@ -13,6 +13,8 @@ import {
     Clock,
     Compass,
     Globe,
+    GraduationCap,
+    Heart,
     LayoutGrid,
     Leaf,
     Lightbulb,
@@ -21,6 +23,8 @@ import {
     MessageSquare,
     Search,
     Share2,
+    ShieldCheck,
+    Sparkles,
     Star,
     Trash2,
     UserCheck,
@@ -189,7 +193,7 @@ export default function Home() {
             <Head title="Platform Aktivitas & Kolaborasi Mahasiswa" />
 
             {/* ── 1. Hero ── */}
-            <section className="px-4 md:px-[8.5%] pt-14 pb-10 md:py-20 grid lg:grid-cols-12 gap-10 items-center">
+            <section id="beranda" className="px-4 md:px-[8.5%] pt-14 pb-10 md:py-20 grid lg:grid-cols-12 gap-10 items-center">
                 {/* Left copy */}
                 <div className="lg:col-span-6 space-y-5 text-left">
                     {/* eyebrow */}
@@ -379,7 +383,81 @@ export default function Home() {
                     ))}
                 </div>
             </section>
+{/* ── 7. Tentang ── */}
+            <section id="tentang" className="px-4 md:px-[8.5%] py-12 space-y-10">
+                <div className="text-center space-y-3">
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-blue-50 dark:bg-blue-950/20 text-[#2563EB] dark:text-blue-400 border border-blue-100/40 dark:border-blue-800/40">
+                        <Heart className="size-3.5" />
+                        <span>Cerita Kami</span>
+                    </div>
+                    <h2 className="text-2xl md:text-3xl font-extrabold text-[#0F172A] dark:text-white leading-tight">
+                        Menghubungkan Potensi Mahasiswa
+                    </h2>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 max-w-[60ch] mx-auto leading-relaxed">
+                        CampLink lahir sebagai wadah kolaboratif digital untuk mengatasi keterbatasan akses informasi kegiatan kemahasiswaan dan mempermudah pembentukan tim.
+                    </p>
+                </div>
 
+                {/* Mission + Values */}
+                <div className="grid lg:grid-cols-12 gap-8 items-center">
+                    <motion.div {...fadeInUp} className="lg:col-span-7 space-y-4">
+                        <h3 className="text-xl font-extrabold text-slate-800 dark:text-white">
+                            Mengapa Kami Membangun CampLink?
+                        </h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                            Kami percaya bahwa pengalaman berorganisasi, berkompetisi, dan berkolaborasi dalam proyek riil merupakan fondasi utama bagi mahasiswa untuk siap bersaing di industri professional.
+                            Namun, proses koordinasi yang manual seringkali menghambat potensi tersebut.
+                        </p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                            Melalui CampLink, seluruh mahasiswa dari berbagai program studi dapat berkumpul secara virtual, saling menawarkan keahlian, dan bahu-membahu melahirkan karya-karya inovatif baru.
+                        </p>
+                    </motion.div>
+
+                    <motion.div {...fadeInUp} className="lg:col-span-5">
+                        <div className="rounded-2xl border border-slate-200/70 dark:border-slate-800 bg-white dark:bg-[#0E121E] p-6 space-y-5 shadow-sm">
+                            {[
+                                { icon: ShieldCheck, title: 'Ekosistem Terpercaya', desc: 'Diawasi dan diverifikasi secara berkala oleh Admin Kemahasiswaan.' },
+                                { icon: Sparkles, title: 'Fokus Masa Depan', desc: 'Setiap riwayat kegiatan dan sertifikat terkonversi menjadi portofolio portabel.' },
+                                { icon: Heart, title: 'Komunitas Inklusif', desc: 'Terbuka untuk semua mahasiswa lintas jurusan dan kampus di Indonesia.' },
+                            ].map(({ icon: Icon, title, desc }) => (
+                                <div key={title} className="flex gap-3 items-start">
+                                    <div className="size-9 rounded-xl bg-blue-500/10 text-[#2563EB] flex items-center justify-center shrink-0">
+                                        <Icon className="size-4" />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-sm font-bold text-slate-800 dark:text-white">{title}</h4>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">{desc}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </motion.div>
+                </div>
+
+                {/* Student Growth Path */}
+                <div className="grid md:grid-cols-3 gap-5">
+                    {[
+                        { icon: Compass, label: 'Eksplorasi Awal', desc: 'Mahasiswa baru menjelajahi berbagai pilihan unit kegiatan, komunitas, dan agenda seminar untuk mencari minat utamanya.', delay: 0.1 },
+                        { icon: GraduationCap, label: 'Partisipasi Aktif', desc: 'Terjun langsung dalam kompetisi, kepanitiaan, atau riset terstruktur bersama mahasiswa lain guna mempraktikkan teori.', delay: 0.2 },
+                        { icon: Award, label: 'Validasi Karir', desc: 'Memanen hasil jerih payah berupa portofolio digital yang siap dipamerkan di industri karir atau untuk studi lanjut.', delay: 0.3 },
+                    ].map(({ icon: Icon, label, desc, delay }) => (
+                        <motion.div
+                            key={label}
+                            {...fadeInUp}
+                            transition={{ delay }}
+                            className="flex flex-col gap-3 p-5 rounded-2xl border border-slate-200/70 dark:border-slate-800 bg-white dark:bg-[#0E121E] shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300"
+                        >
+                            <div className="size-10 rounded-xl bg-blue-500/10 text-[#2563EB] flex items-center justify-center">
+                                <Icon className="size-5" />
+                            </div>
+                            <div className="space-y-1">
+                                <h4 className="text-sm font-bold text-slate-800 dark:text-white">{label}</h4>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{desc}</p>
+                            </div>
+                        </motion.div>
+                    ))}
+                </div>
+            </section>
             {/* ── 3. Event Mendatang ── */}
             <section id="event-mendatang" className="px-4 md:px-[8.5%] py-12 space-y-6">
                 <div className="space-y-1">
@@ -564,7 +642,8 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* ── 7. CTA ── */}
+
+            {/* ── 8. CTA ── */}
             <section className="px-4 md:px-[8.5%] pb-24 py-6">
                 <div className="relative rounded-[24px] overflow-hidden bg-[#2563EB] text-white shadow-2xl">
                     {/* Decorative background circles */}
