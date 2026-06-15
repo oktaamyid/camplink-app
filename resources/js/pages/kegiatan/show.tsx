@@ -48,6 +48,8 @@ interface Activity {
     creator: User;
     is_team_based?: boolean;
     has_participants?: boolean;
+    max_teams?: number;
+    max_members_per_team?: number;
     recruitment?: TeamRecruitment;
     reviews: ActivityReview[];
 }
@@ -56,6 +58,7 @@ interface Props {
     activity: Activity;
     userApplication?: any;
     userRegistration?: any;
+    userRegistrationStatus?: 'pending' | 'approved' | 'rejected' | null;
     isBookmarked?: boolean;
     userReview?: ActivityReview | null;
     userCertificate?: { file_url: string; certificate_code: string } | null;
@@ -64,6 +67,9 @@ interface Props {
         totalReviews: number;
     };
     participants?: Array<{ id: number; name: string; email: string }>;
+    groupConversationId?: number | null;
+    competitionTeams?: any[];
+    myTeam?: any | null;
 }
 
 function CategoryBadge({ category }: { category: string }) {
@@ -93,11 +99,12 @@ const formatDate = (dateString: string | null) => {
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=300&fit=crop&auto=format';
 
-export default function KegiatanDetail({ activity, userApplication, userRegistration, isBookmarked, userReview, userCertificate, stats, participants = [] }: Props) {
+export default function KegiatanDetail({ activity, userApplication, userRegistration, userRegistrationStatus, isBookmarked, userReview, userCertificate, stats, participants = [], groupConversationId, competitionTeams = [], myTeam }: Props) {
     const { auth } = usePage().props as any;
     const currentUser = auth?.user;
     const isCreator = currentUser?.id === activity.creator_id;
     const hasRecruitment = !!activity.recruitment;
+    const isLomba = activity.category?.name === 'Lomba';
 
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showApplyModal, setShowApplyModal] = useState(false);
@@ -436,16 +443,54 @@ export default function KegiatanDetail({ activity, userApplication, userRegistra
                     {!isCreator && activity.has_participants && (
                         <div className="rounded-xl border border-gray-200 bg-white p-5">
                             <h2 className="mb-3 text-sm font-semibold text-gray-900">Pendaftaran Peserta</h2>
-                            
+
                             {userRegistration ? (
-                                <div className="space-y-4">
-                                    <div className="w-full text-center rounded-lg bg-emerald-100 px-4 py-2.5 text-sm font-semibold text-emerald-700">
-                                        <span className="flex items-center justify-center gap-2">
-                                            <CheckCircle2 className="size-4" />
-                                            Terdaftar sebagai Peserta
-                                        </span>
-                                    </div>
-                                    
+                                <div className="space-y-3">
+                                    {/* Status badge */}
+                                    {userRegistrationStatus === 'pending' && (
+                                        <div className="w-full text-center rounded-lg bg-amber-100 px-4 py-2.5 text-sm font-semibold text-amber-700">
+                                            <span className="flex items-center justify-center gap-2">
+                                                <Clock className="size-4" />
+                                                Menunggu Persetujuan
+                                            </span>
+                                        </div>
+                                    )}
+                                    {userRegistrationStatus === 'approved' && (
+                                        <div className="w-full text-center rounded-lg bg-emerald-100 px-4 py-2.5 text-sm font-semibold text-emerald-700">
+                                            <span className="flex items-center justify-center gap-2">
+                                                <CheckCircle2 className="size-4" />
+                                                Terdaftar sebagai Peserta
+                                            </span>
+                                        </div>
+                                    )}
+                                    {userRegistrationStatus === 'rejected' && (
+                                        <div className="w-full text-center rounded-lg bg-red-100 px-4 py-2.5 text-sm font-semibold text-red-700">
+                                            Pendaftaran Ditolak
+                                        </div>
+                                    )}
+
+                                    {/* Group chat button - only for approved + non-Lomba */}
+                                    {userRegistrationStatus === 'approved' && groupConversationId && !isLomba && (
+                                        <Link
+                                            href={route('pesan.index', { conversation_id: groupConversationId })}
+                                            className="w-full flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors"
+                                        >
+                                            <MessageSquare className="size-4" />
+                                            Grup Chat Kegiatan
+                                        </Link>
+                                    )}
+
+                                    {/* For Lomba: go to team page */}
+                                    {userRegistrationStatus === 'approved' && isLomba && (
+                                        <Link
+                                            href={route('kegiatan.tim-lomba.index', activity.id)}
+                                            className="w-full flex items-center justify-center gap-2 rounded-lg bg-[#2F3E8F] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#243070] transition-colors"
+                                        >
+                                            <Users className="size-4" />
+                                            {myTeam ? `Tim: ${myTeam.name}` : 'Lihat & Kelola Tim'}
+                                        </Link>
+                                    )}
+
                                     {userCertificate && (
                                         <div className="rounded-lg border border-indigo-100 bg-indigo-50 p-4">
                                             <div className="flex items-start gap-3">
@@ -455,9 +500,9 @@ export default function KegiatanDetail({ activity, userApplication, userRegistra
                                                 <div>
                                                     <h3 className="text-sm font-bold text-indigo-900">Sertifikat Tersedia!</h3>
                                                     <p className="text-xs text-indigo-700 mt-1 mb-3">Selamat, Anda telah menerima sertifikat untuk kegiatan ini.</p>
-                                                    <a 
-                                                        href={userCertificate.file_url} 
-                                                        target="_blank" 
+                                                    <a
+                                                        href={userCertificate.file_url}
+                                                        target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 transition-colors"
                                                     >
@@ -473,7 +518,7 @@ export default function KegiatanDetail({ activity, userApplication, userRegistra
                             ) : (
                                 <>
                                     <p className="mb-4 text-sm text-gray-600">Anda dapat mendaftar sebagai peserta untuk mengikuti kegiatan ini.</p>
-                                    <button 
+                                    <button
                                         onClick={() => router.post(`/kegiatan/${activity.id}/daftar`)}
                                         className="w-full flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors"
                                     >
@@ -511,12 +556,37 @@ export default function KegiatanDetail({ activity, userApplication, userRegistra
                                     Edit
                                 </Link>
                                 <Link
+                                    href={route('kegiatan.pendaftar', activity.id)}
+                                    className="mt-2 w-full flex items-center justify-center gap-2 rounded-lg border border-[#2F3E8F]/20 bg-[#2F3E8F]/5 px-4 py-2 text-sm font-semibold text-[#2F3E8F] hover:bg-[#2F3E8F]/10 transition-colors"
+                                >
+                                    <Users className="size-4" />
+                                    Kelola Pendaftar
+                                </Link>
+                                <Link
                                     href={route('kegiatan.sertifikat.manage', activity.id)}
                                     className="mt-2 w-full flex items-center justify-center gap-2 rounded-lg border border-[#2F3E8F]/20 bg-[#2F3E8F]/5 px-4 py-2 text-sm font-semibold text-[#2F3E8F] hover:bg-[#2F3E8F]/10 transition-colors"
                                 >
                                     <Award className="size-4" />
                                     Kelola Sertifikat
                                 </Link>
+                                {groupConversationId && (
+                                    <Link
+                                        href={route('pesan.index', { conversation_id: groupConversationId })}
+                                        className="mt-2 w-full flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors"
+                                    >
+                                        <MessageSquare className="size-4" />
+                                        Grup Chat Kegiatan
+                                    </Link>
+                                )}
+                                {isLomba && (
+                                    <Link
+                                        href={route('kegiatan.tim-lomba.index', activity.id)}
+                                        className="mt-2 w-full flex items-center justify-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700 hover:bg-amber-100 transition-colors"
+                                    >
+                                        <Users className="size-4" />
+                                        Lihat Tim Lomba
+                                    </Link>
+                                )}
                             </>
                         )}
 

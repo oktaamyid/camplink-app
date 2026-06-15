@@ -8,7 +8,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Conversation extends Model
 {
-    protected $fillable = ['user_one_id', 'user_two_id', 'team_recruitment_id'];
+    protected $fillable = ['user_one_id', 'user_two_id', 'team_recruitment_id', 'activity_id'];
+
+    public function activity(): BelongsTo
+    {
+        return $this->belongsTo(Activity::class);
+    }
 
     public function teamRecruitment(): BelongsTo
     {

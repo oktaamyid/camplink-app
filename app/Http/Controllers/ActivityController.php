@@ -6,6 +6,8 @@ use App\Http\Requests\StoreActivityRequest;
 use App\Models\Activity;
 use App\Models\ActivityRegistration;
 use App\Models\Category;
+use App\Models\CompetitionTeam;
+use App\Models\Conversation;
 use App\Models\User;
 use App\Notifications\NewActivityPublished;
 use Illuminate\Http\RedirectResponse;
@@ -149,6 +151,8 @@ class ActivityController extends Controller
             'is_team_based' => $request->boolean('is_team_based'),
             'has_participants' => $request->boolean('has_participants', true),
             'team_leader_id' => $validated['team_leader_id'] ?? null,
+            'max_teams' => $validated['max_teams'] ?? null,
+            'max_members_per_team' => $validated['max_members_per_team'] ?? null,
         ];
 
         if ($request->hasFile('poster')) {
@@ -195,6 +199,8 @@ class ActivityController extends Controller
             'is_team_based' => $request->boolean('is_team_based'),
             'has_participants' => $request->boolean('has_participants', true),
             'team_leader_id' => $validated['team_leader_id'] ?? null,
+            'max_teams' => $validated['max_teams'] ?? null,
+            'max_members_per_team' => $validated['max_members_per_team'] ?? null,
         ]);
 
         // Notify all users about the new activity
@@ -214,7 +220,15 @@ class ActivityController extends Controller
         $userReview = null;
         $userCertificate = null;
 
+        $userRegistrationStatus = null;
+        $isCreator = false;
+        $groupConversationId = null;
+        $competitionTeams = [];
+        $myTeam = null;
+
         if ($request->user()) {
+            $isCreator = $request->user()->id === $kegiatan->creator_id;
+
             if ($kegiatan->recruitment) {
                 $userApplication = $kegiatan->recruitment->applications()
                     ->where('applicant_id', $request->user()->id)
@@ -224,6 +238,8 @@ class ActivityController extends Controller
             $userRegistration = ActivityRegistration::where('activity_id', $kegiatan->id)
                 ->where('user_id', $request->user()->id)
                 ->first();
+
+            $userRegistrationStatus = $userRegistration?->status;
 
             $isBookmarked = $request->user()->bookmarks()
                 ->where('activity_id', $kegiatan->id)
@@ -236,13 +252,35 @@ class ActivityController extends Controller
             $userCertificate = $kegiatan->certificates()
                 ->where('user_id', $request->user()->id)
                 ->first();
+
+            // Group conversation access (approved participants + creator)
+            $groupConv = Conversation::where('activity_id', $kegiatan->id)->first();
+            if ($groupConv && ($isCreator || $userRegistrationStatus === 'approved')) {
+                $groupConversationId = $groupConv->id;
+            }
+
+            // Competition teams (for Lomba)
+            if ($kegiatan->category?->name === 'Lomba' && ($isCreator || $userRegistrationStatus === 'approved')) {
+                $competitionTeams = CompetitionTeam::where('activity_id', $kegiatan->id)
+                    ->with(['leader:id,name', 'acceptedMembers' => function ($q) {
+                        $q->with('user:id,name');
+                    }])
+                    ->withCount('acceptedMembers')
+                    ->get();
+
+                $myTeam = $competitionTeams->first(function ($team) use ($request) {
+                    return $team->members->contains('user_id', $request->user()->id);
+                });
+            }
         }
 
         $averageRating = $kegiatan->reviews()->avg('rating') ?: 0;
         $totalReviews = $kegiatan->reviews()->count();
 
+        // Only show approved participants in public list
         $participants = $kegiatan->registrations()
             ->with('user:id,name,email')
+            ->where('status', 'approved')
             ->get()
             ->map(function ($reg) {
                 return [
@@ -256,10 +294,14 @@ class ActivityController extends Controller
             'activity' => $kegiatan,
             'userApplication' => $userApplication,
             'userRegistration' => $userRegistration,
+            'userRegistrationStatus' => $userRegistrationStatus,
             'isBookmarked' => $isBookmarked,
             'userReview' => $userReview,
             'userCertificate' => $userCertificate,
             'participants' => $participants,
+            'groupConversationId' => $groupConversationId,
+            'competitionTeams' => $competitionTeams,
+            'myTeam' => $myTeam,
             'stats' => [
                 'averageRating' => round($averageRating, 1),
                 'totalReviews' => $totalReviews,

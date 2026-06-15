@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Activity;
+use App\Models\ActivityRegistration;
 use App\Models\Conversation;
 use App\Models\TeamRecruitment;
 use App\Models\User;
@@ -15,6 +17,7 @@ class MessageController extends Controller
         $user = $request->user();
         $activeConversationId = $request->query('conversation_id');
         $teamRecruitmentId = $request->query('team_recruitment_id');
+        $activityGroupId = $request->query('activity_id');
 
         if ($teamRecruitmentId) {
             $teamConv = Conversation::firstOrCreate(
@@ -23,11 +26,19 @@ class MessageController extends Controller
             $activeConversationId = $teamConv->id;
         }
 
+        if ($activityGroupId) {
+            $activityConv = Conversation::firstOrCreate(
+                ['activity_id' => $activityGroupId]
+            );
+            $activeConversationId = $activityConv->id;
+        }
+
         // 1. Fetch 1-on-1 conversations
         $directConversations = Conversation::with(['userOne', 'userTwo', 'messages' => function ($q) {
             $q->latest()->take(1);
         }])
             ->where('team_recruitment_id', null)
+            ->where('activity_id', null)
             ->where(function ($q) use ($user) {
                 $q->where('user_one_id', $user->id)->orWhere('user_two_id', $user->id);
             })
@@ -73,17 +84,54 @@ class MessageController extends Controller
             ];
         });
 
-        $conversations = $directConversations->concat($teamConversations)->sortByDesc('last_message_time')->values();
+        // 3. Fetch Activity Group conversations (for approved participants)
+        $approvedActivityIds = ActivityRegistration::where('user_id', $user->id)
+            ->where('status', 'approved')
+            ->pluck('activity_id')
+            ->toArray();
+
+        $createdActivityIds = Activity::where('creator_id', $user->id)
+            ->pluck('id')
+            ->toArray();
+
+        $accessibleActivityIds = array_unique(array_merge($approvedActivityIds, $createdActivityIds));
+
+        $activityGroupConversations = Conversation::whereNotNull('activity_id')
+            ->whereIn('activity_id', $accessibleActivityIds)
+            ->with(['activity:id,title', 'messages' => function ($q) {
+                $q->latest()->take(1);
+            }])
+            ->get()
+            ->map(function ($conv) use ($user) {
+                $lastMessage = $conv->messages->first();
+
+                return [
+                    'id' => $conv->id,
+                    'title' => $conv->activity->title ?? 'Grup Kegiatan',
+                    'type' => 'activity_group',
+                    'last_message' => $lastMessage ? $lastMessage->body : 'Belum ada pesan.',
+                    'last_message_time' => $lastMessage ? $lastMessage->created_at->diffForHumans() : '',
+                    'unread_count' => $conv->messages()->where('sender_id', '!=', $user->id)->where('is_read', false)->count(),
+                ];
+            });
+
+        $conversations = $directConversations
+            ->concat($teamConversations)
+            ->concat($activityGroupConversations)
+            ->sortByDesc('last_message_time')
+            ->values();
 
         $activeConversation = null;
         $messages = [];
 
         if ($activeConversationId) {
-            $conversation = Conversation::with(['teamRecruitment.activity', 'userOne', 'userTwo'])->findOrFail($activeConversationId);
+            $conversation = Conversation::with(['teamRecruitment.activity', 'activity', 'userOne', 'userTwo'])->findOrFail($activeConversationId);
 
             // Security check
             $isAuthorized = false;
-            if ($conversation->team_recruitment_id) {
+            if ($conversation->activity_id) {
+                $isAuthorized = in_array($conversation->activity_id, $accessibleActivityIds);
+            } elseif ($conversation->team_recruitment_id) {
                 $isAuthorized = $teamRecruitments->contains('id', $conversation->team_recruitment_id);
             } else {
                 $isAuthorized = ($conversation->user_one_id === $user->id || $conversation->user_two_id === $user->id);
@@ -93,7 +141,13 @@ class MessageController extends Controller
                 abort(403);
             }
 
-            if ($conversation->team_recruitment_id) {
+            if ($conversation->activity_id) {
+                $activeConversation = [
+                    'id' => $conversation->id,
+                    'title' => $conversation->activity->title ?? 'Grup Kegiatan',
+                    'type' => 'activity_group',
+                ];
+            } elseif ($conversation->team_recruitment_id) {
                 $activeConversation = [
                     'id' => $conversation->id,
                     'title' => $conversation->teamRecruitment->activity->title,
@@ -134,7 +188,14 @@ class MessageController extends Controller
 
         // Security check
         $isAuthorized = false;
-        if ($conversation->team_recruitment_id) {
+        if ($conversation->activity_id) {
+            $approvedIds = ActivityRegistration::where('user_id', $user->id)
+                ->where('status', 'approved')
+                ->pluck('activity_id')
+                ->toArray();
+            $creatorIds = Activity::where('creator_id', $user->id)->pluck('id')->toArray();
+            $isAuthorized = in_array($conversation->activity_id, array_merge($approvedIds, $creatorIds));
+        } elseif ($conversation->team_recruitment_id) {
             $isAuthorized = TeamRecruitment::where('id', $conversation->team_recruitment_id)
                 ->where(function ($query) use ($user) {
                     $query->whereHas('activity', function ($q) use ($user) {

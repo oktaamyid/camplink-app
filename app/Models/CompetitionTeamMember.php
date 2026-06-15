@@ -5,30 +5,31 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class ActivityRegistration extends Model
+class CompetitionTeamMember extends Model
 {
-    const CREATED_AT = 'registered_at';
+    public const CREATED_AT = 'applied_at';
 
-    const UPDATED_AT = null;
+    public const UPDATED_AT = null;
 
     protected $fillable = [
-        'activity_id',
+        'team_id',
         'user_id',
         'status',
+        'message',
         'reviewed_at',
     ];
 
     protected function casts(): array
     {
         return [
-            'registered_at' => 'datetime',
+            'applied_at' => 'datetime',
             'reviewed_at' => 'datetime',
         ];
     }
 
-    public function activity(): BelongsTo
+    public function team(): BelongsTo
     {
-        return $this->belongsTo(Activity::class);
+        return $this->belongsTo(CompetitionTeam::class, 'team_id');
     }
 
     public function user(): BelongsTo

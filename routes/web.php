@@ -9,6 +9,7 @@ use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\BerandaController;
 use App\Http\Controllers\BookmarkController;
 use App\Http\Controllers\CertificateController;
+use App\Http\Controllers\CompetitionTeamController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InisiatorRequestController;
 use App\Http\Controllers\MessageController;
@@ -126,8 +127,17 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/pengumuman/{announcement}', [AnnouncementController::class, 'show'])->name('pengumuman.show');
 
     Route::post('/kegiatan/{kegiatan}/daftar', [ActivityRegistrationController::class, 'store'])->name('kegiatan.daftar');
+    Route::get('/kegiatan/{kegiatan}/pendaftar', [ActivityRegistrationController::class, 'index'])->name('kegiatan.pendaftar');
+    Route::post('/kegiatan/{kegiatan}/registrasi/{registration}/approve', [ActivityRegistrationController::class, 'approve'])->name('kegiatan.registrasi.approve');
+    Route::post('/kegiatan/{kegiatan}/registrasi/{registration}/reject', [ActivityRegistrationController::class, 'reject'])->name('kegiatan.registrasi.reject');
     Route::post('/kegiatan/{activity}/report', [ActivityReportController::class, 'store'])->name('kegiatan.report');
     Route::post('/kegiatan/{kegiatan}/review', [ActivityReviewController::class, 'store'])->name('kegiatan.review');
+
+    // Competition Teams (Lomba)
+    Route::get('/kegiatan/{kegiatan}/tim-lomba', [CompetitionTeamController::class, 'index'])->name('kegiatan.tim-lomba.index');
+    Route::post('/kegiatan/{kegiatan}/tim-lomba', [CompetitionTeamController::class, 'store'])->name('kegiatan.tim-lomba.store');
+    Route::post('/tim-lomba/{team}/apply', [CompetitionTeamController::class, 'apply'])->name('tim-lomba.apply');
+    Route::patch('/tim-lomba/member/{member}/status', [CompetitionTeamController::class, 'updateMember'])->name('tim-lomba.member.update');
 
     Route::get('/kegiatan/{activity}/sertifikat', [CertificateController::class, 'manage'])->name('kegiatan.sertifikat.manage');
     Route::post('/kegiatan/{activity}/sertifikat', [CertificateController::class, 'storeBulk'])->name('kegiatan.sertifikat.store');

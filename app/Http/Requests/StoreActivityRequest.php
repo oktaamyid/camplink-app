@@ -38,6 +38,8 @@ class StoreActivityRequest extends FormRequest
             'is_team_based' => ['nullable', 'boolean'],
             'has_participants' => ['nullable', 'boolean'],
             'team_leader_id' => ['nullable', 'exists:users,id'],
+            'max_teams' => ['nullable', 'integer', 'min:1'],
+            'max_members_per_team' => ['nullable', 'integer', 'min:1'],
         ];
     }
 

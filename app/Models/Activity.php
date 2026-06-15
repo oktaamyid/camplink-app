@@ -28,6 +28,8 @@ class Activity extends Model
         'has_participants',
         'is_verified',
         'team_leader_id',
+        'max_teams',
+        'max_members_per_team',
     ];
 
     protected function casts(): array
@@ -40,6 +42,8 @@ class Activity extends Model
             'is_verified' => 'boolean',
             'is_online' => 'boolean',
             'quota' => 'integer',
+            'max_teams' => 'integer',
+            'max_members_per_team' => 'integer',
         ];
     }
 
@@ -86,5 +90,15 @@ class Activity extends Model
     public function certificates(): HasMany
     {
         return $this->hasMany(Certificate::class);
+    }
+
+    public function competitionTeams(): HasMany
+    {
+        return $this->hasMany(CompetitionTeam::class);
+    }
+
+    public function groupConversation(): HasOne
+    {
+        return $this->hasOne(Conversation::class);
     }
 }

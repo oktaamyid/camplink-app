@@ -16,6 +16,7 @@ const locations = ['Auditorium Kampus', 'Lab Komputer', 'Fakultas Teknik', 'Aula
 
 export default function BuatKegiatan({ categories }: Props) {
     const [posterPreview, setPosterPreview] = useState<string | null>(null);
+    const [selectedCategoryName, setSelectedCategoryName] = useState<string>('');
     const { data, setData, post, processing, errors } = useForm({
         title: '',
         category_id: '',
@@ -31,6 +32,8 @@ export default function BuatKegiatan({ categories }: Props) {
         poster: null as File | null,
         is_team_based: false as boolean,
         has_participants: true as boolean,
+        max_teams: '',
+        max_members_per_team: '',
     });
 
     const handlePosterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,7 +101,11 @@ export default function BuatKegiatan({ categories }: Props) {
                         <div className="relative">
                             <select
                                 value={data.category_id}
-                                onChange={(e) => setData('category_id', e.target.value)}
+                                onChange={(e) => {
+                                    setData('category_id', e.target.value);
+                                    const cat = categories?.find((c) => String(c.id) === e.target.value);
+                                    setSelectedCategoryName(cat?.name ?? '');
+                                }}
                                 className={`w-full appearance-none rounded-lg border ${errors.category_id ? 'border-red-500' : 'border-gray-200 dark:border-slate-800'} bg-white dark:bg-[#111625] px-3.5 py-2.5 text-sm text-gray-900 dark:text-white focus:border-[#2F3E8F] dark:focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-[#2F3E8F] dark:focus:ring-indigo-500`}
                             >
                                 <option value="" className="bg-white dark:bg-[#111625] text-gray-900 dark:text-white">Pilih kategori</option>
@@ -280,6 +287,40 @@ export default function BuatKegiatan({ categories }: Props) {
                         />
                         {errors.contact && <p className="mt-1 text-xs text-red-500">{errors.contact}</p>}
                     </div>
+
+                    {/* Competition Config - Only for Lomba */}
+                    {selectedCategoryName === 'Lomba' && (
+                        <>
+                            <div>
+                                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">
+                                    Maksimal Jumlah Tim
+                                </label>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    placeholder="Contoh: 10"
+                                    value={data.max_teams}
+                                    onChange={(e) => setData('max_teams', e.target.value)}
+                                    className={`w-full rounded-lg border ${errors.max_teams ? 'border-red-500' : 'border-gray-200 dark:border-slate-800'} bg-white dark:bg-[#111625] px-3.5 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:border-[#2F3E8F] dark:focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-[#2F3E8F] dark:focus:ring-indigo-500`}
+                                />
+                                {errors.max_teams && <p className="mt-1 text-xs text-red-500">{errors.max_teams}</p>}
+                            </div>
+                            <div>
+                                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">
+                                    Maks. Anggota per Tim
+                                </label>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    placeholder="Contoh: 5"
+                                    value={data.max_members_per_team}
+                                    onChange={(e) => setData('max_members_per_team', e.target.value)}
+                                    className={`w-full rounded-lg border ${errors.max_members_per_team ? 'border-red-500' : 'border-gray-200 dark:border-slate-800'} bg-white dark:bg-[#111625] px-3.5 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:border-[#2F3E8F] dark:focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-[#2F3E8F] dark:focus:ring-indigo-500`}
+                                />
+                                {errors.max_members_per_team && <p className="mt-1 text-xs text-red-500">{errors.max_members_per_team}</p>}
+                            </div>
+                        </>
+                    )}
 
                     {/* Poster Upload */}
                     <div className="md:col-span-2">
