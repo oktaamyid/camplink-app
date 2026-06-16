@@ -24,7 +24,7 @@ class ActivityController extends Controller
     {
         $query = Activity::with(['category', 'recruitment', 'creator']);
 
-        // Tab Filter: All, Saved, or Mine
+        // Tab Filter: All, Saved, Mine, or Joined
         $tab = $request->input('tab', 'all');
         if ($tab === 'saved' && request()->user()) {
             $query->whereHas('bookmarks', function ($q) {
@@ -32,6 +32,10 @@ class ActivityController extends Controller
             });
         } elseif ($tab === 'mine' && request()->user()) {
             $query->where('creator_id', request()->user()->id);
+        } elseif ($tab === 'joined' && request()->user()) {
+            $query->whereHas('registrations', function ($q) {
+                $q->where('user_id', request()->user()->id);
+            });
         } else {
             $query->where('status', 'active');
         }
@@ -76,14 +80,23 @@ class ActivityController extends Controller
         $allCategories = Category::all();
 
         $userBookmarks = [];
+        $userRegistrations = [];
+
         if (request()->user()) {
             $userBookmarks = request()->user()->bookmarks()->pluck('activity_id')->toArray();
+
+            if ($tab === 'joined') {
+                $userRegistrations = ActivityRegistration::where('user_id', request()->user()->id)
+                    ->pluck('status', 'activity_id')
+                    ->toArray();
+            }
         }
 
-        // Add is_bookmarked helper
+        // Add is_bookmarked and registration_status helpers
         $collection = $viewMode === 'calendar' ? $activities : $activities->getCollection();
-        $collection->transform(function ($activity) use ($userBookmarks) {
+        $collection->transform(function ($activity) use ($userBookmarks, $userRegistrations) {
             $activity->is_bookmarked = in_array($activity->id, $userBookmarks);
+            $activity->registration_status = $userRegistrations[$activity->id] ?? null;
 
             return $activity;
         });

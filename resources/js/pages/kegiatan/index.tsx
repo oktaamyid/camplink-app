@@ -12,7 +12,10 @@ import {
     List, 
     ChevronLeft, 
     ChevronRight,
-    Plus
+    Plus,
+    CheckCircle2,
+    Clock,
+    X
 } from 'lucide-react';
 import { useState, useEffect, useRef, useMemo } from 'react';
 
@@ -50,6 +53,7 @@ interface Activity {
     description: string;
     poster_url: string | null;
     is_bookmarked?: boolean;
+    registration_status?: 'pending' | 'approved' | 'rejected' | null;
     status: string;
 }
 
@@ -67,7 +71,7 @@ interface Filters {
     time?: string;
     sort?: string;
     view?: 'card' | 'table' | 'calendar';
-    tab?: 'all' | 'saved' | 'mine';
+    tab?: 'all' | 'saved' | 'mine' | 'joined';
 }
 
 interface Props {
@@ -102,7 +106,7 @@ export default function Kegiatan({ activities, categories, filters = {} }: Props
     
     // View state
     const [viewMode, setViewMode] = useState<'card' | 'table' | 'calendar'>(filters.view || 'card');
-    const [activeTab, setActiveTab] = useState<'all' | 'saved' | 'mine'>(filters.tab || 'all');
+    const [activeTab, setActiveTab] = useState<'all' | 'saved' | 'mine' | 'joined'>(filters.tab || 'all');
     
     // Filter states
     const [selectedCategories, setSelectedCategories] = useState<string[]>(
@@ -238,6 +242,19 @@ export default function Kegiatan({ activities, categories, filters = {} }: Props
                             >
                                 <Bookmark className={`size-4 ${activeTab === 'saved' ? 'fill-[#2F3E8F]' : ''}`} />
                                 Tersimpan
+                            </button>
+                        )}
+                        {auth.user && (
+                            <button
+                                onClick={() => setActiveTab('joined')}
+                                className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${
+                                    activeTab === 'joined' 
+                                    ? 'border-[#2F3E8F] text-[#2F3E8F]' 
+                                    : 'border-transparent text-gray-400 hover:text-gray-600 hover:border-gray-200'
+                                }`}
+                            >
+                                <CheckCircle2 className={`size-4`} />
+                                Kegiatan Diikuti
                             </button>
                         )}
                         {(auth.user?.role === 'inisiator' || auth.user?.role === 'admin') && (
@@ -388,6 +405,26 @@ export default function Kegiatan({ activities, categories, filters = {} }: Props
                                                     </button>
                                                 )}
                                             </div>
+                                            {/* Registration status badge for joined tab */}
+                                            {activeTab === 'joined' && event.registration_status && (
+                                                <div className="mb-2">
+                                                    {event.registration_status === 'pending' && (
+                                                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
+                                                            <Clock className="size-3" /> Menunggu Persetujuan
+                                                        </span>
+                                                    )}
+                                                    {event.registration_status === 'approved' && (
+                                                        <span className="inline-flex items-center gap-1 rounded-full bg-green-50 border border-green-200 px-2 py-0.5 text-[11px] font-semibold text-green-700">
+                                                            <CheckCircle2 className="size-3" /> Diterima
+                                                        </span>
+                                                    )}
+                                                    {event.registration_status === 'rejected' && (
+                                                        <span className="inline-flex items-center gap-1 rounded-full bg-red-50 border border-red-200 px-2 py-0.5 text-[11px] font-semibold text-red-600">
+                                                            <X className="size-3" /> Ditolak
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            )}
                                             <p className="text-xs text-gray-500 line-clamp-2 mb-4 flex-1">{event.description}</p>
                                             <div className="space-y-2 border-t border-gray-50 pt-3 text-[11px] font-medium text-gray-600">
                                                 <div className="flex items-center gap-2">
