@@ -26,7 +26,7 @@ use Inertia\Inertia;
 
 Route::get('/', function () {
     if (Auth::check()) {
-        return Auth::user()->role === 'admin' ? redirect()->route('dashboard') : redirect()->route('beranda');
+        return redirect()->route('dashboard');
     }
 
     $upcomingEvents = Activity::where('status', 'active')
@@ -44,7 +44,7 @@ Route::get('/', function () {
 
 Route::get('/service', function () {
     if (Auth::check()) {
-        return Auth::user()->role === 'admin' ? redirect()->route('dashboard') : redirect()->route('beranda');
+        return redirect()->route('dashboard');
     }
 
     return Inertia::render('welcome/features');
@@ -52,7 +52,7 @@ Route::get('/service', function () {
 
 Route::get('/about', function () {
     if (Auth::check()) {
-        return Auth::user()->role === 'admin' ? redirect()->route('dashboard') : redirect()->route('beranda');
+        return redirect()->route('dashboard');
     }
 
     return Inertia::render('welcome/about');
@@ -60,7 +60,7 @@ Route::get('/about', function () {
 
 Route::get('/faq', function () {
     if (Auth::check()) {
-        return Auth::user()->role === 'admin' ? redirect()->route('dashboard') : redirect()->route('beranda');
+        return redirect()->route('dashboard');
     }
 
     return Inertia::render('welcome/guide');
@@ -119,7 +119,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 // CampLink frontend routes (Membutuhkan Login)
 Route::middleware(['auth'])->group(function () {
-    Route::get('/beranda', BerandaController::class)->name('beranda');
+    Route::get('/beranda', function () {
+        return redirect()->route('dashboard');
+    })->name('beranda');
     Route::get('/kegiatan', [ActivityController::class, 'index'])->name('kegiatan.index');
     Route::get('/kegiatan/{kegiatan}', [ActivityController::class, 'show'])->name('kegiatan.show');
 

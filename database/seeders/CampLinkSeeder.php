@@ -31,7 +31,7 @@ class CampLinkSeeder extends Seeder
 
         $now = now();
         DB::table('categories')->insert([
-            ['name' => 'Seminar',       'description' => 'Kegiatan paparan ilmiah dan diskusi dari narasumber ahli',         'icon' => 'icon-seminar', 'created_at' => $now],
+            ['name' => 'Seminar',       'description' => 'Kegiatan paparan ilmiah dan diskusi dari narasumber ahlI',         'icon' => 'icon-seminar', 'created_at' => $now],
             ['name' => 'Workshop',      'description' => 'Pelatihan praktis untuk meningkatkan kemampuan teknis/non-teknis', 'icon' => 'icon-workshop', 'created_at' => $now],
             ['name' => 'Lomba',         'description' => 'Kompetisi antar mahasiswa dalam berbagai bidang',                  'icon' => 'icon-trophy', 'created_at' => $now],
             ['name' => 'Penelitian',    'description' => 'Kegiatan riset dan penelitian ilmiah bersama tim',                 'icon' => 'icon-research', 'created_at' => $now],

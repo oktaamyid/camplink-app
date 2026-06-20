@@ -13,11 +13,6 @@ export function AppSidebar() {
 
     const mainNavItems: NavItem[] = [
         {
-            title: 'Beranda',
-            href: '/beranda',
-            icon: Home,
-        },
-        {
             title: 'Dashboard',
             href: '/dashboard',
             icon: LayoutGrid,

@@ -77,7 +77,6 @@ export default function CampLinkLayout({ children }: CampLinkLayoutProps) {
             label: 'UTAMA',
             items: [
                 { title: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-                { title: 'Beranda', href: '/beranda', icon: Home },
                 { title: 'Kegiatan', href: '/kegiatan', icon: BookOpen },
                 { title: 'Pengumuman', href: '/pengumuman', icon: Megaphone },
             ]
@@ -119,7 +118,7 @@ export default function CampLinkLayout({ children }: CampLinkLayoutProps) {
         if (href.includes('?')) return currentUrl === href;
         const currentPath = currentUrl.split('?')[0];
         const itemPath = href.split('?')[0];
-        if (itemPath === '/beranda' || itemPath === '/dashboard') return currentPath === itemPath;
+        if (itemPath === '/dashboard') return currentPath === itemPath;
         if (currentPath.startsWith(itemPath)) {
             if (itemPath === '/kegiatan' && currentUrl.includes('tab=saved')) return false;
             return true;
@@ -138,7 +137,7 @@ export default function CampLinkLayout({ children }: CampLinkLayoutProps) {
                         
                         {/* Sidebar Header - Brand Logo */}
                         <SidebarHeader className="p-4 border-b border-[#F0F0F0] dark:border-slate-800/80 flex flex-row items-center justify-center group-data-[state=expanded]:justify-start group-data-[state=expanded]:px-6 h-16 transition-all">
-                            <Link href="/beranda" className="transition-opacity active:scale-[0.98]">
+                            <Link href="/dashboard" className="transition-opacity active:scale-[0.98]">
                                 <CampLinkLogo compact={false} textClassName="group-data-[state=collapsed]:hidden font-bold tracking-tight text-[#111111] dark:text-white" />
                             </Link>
                         </SidebarHeader>

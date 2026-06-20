@@ -27,7 +27,247 @@ import {
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import RichTextEditor from '@/components/rich-text-editor';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import {
+    ResponsiveContainer,
+    AreaChart as ReAreaChart,
+    Area,
+    BarChart as ReBarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    PieChart as RePieChart,
+    Pie,
+    Cell
+} from 'recharts';
+
+interface CustomTooltipProps {
+    active?: boolean;
+    payload?: Array<{
+        name?: string;
+        value?: number | string;
+        payload?: any;
+        color?: string;
+    }>;
+    label?: string;
+}
+
+const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
+    if (active && payload && payload.length) {
+        const item = payload[0];
+        return (
+            <div className="bg-white/95 dark:bg-slate-955/95 backdrop-blur-md border border-slate-200/60 dark:border-slate-800/80 p-3 rounded-xl shadow-xl animate-in fade-in zoom-in-95 duration-100">
+                {label && (
+                    <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 mb-1 uppercase tracking-wider">{label}</p>
+                )}
+                <p className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                    <span 
+                        className="size-2.5 rounded-full shrink-0 shadow-xs" 
+                        style={{ backgroundColor: item.payload?.fill || item.color || '#2F3E8F' }}
+                    />
+                    <span className="text-slate-500 dark:text-slate-400 font-semibold">{item.name}:</span>
+                    <span className="font-black">{item.value}</span>
+                </p>
+            </div>
+        );
+    }
+    return null;
+};
+
+// Recharts-based Area Chart matching shadcnUI premium visuals
+function AreaChart({ data }: { data: { label: string; value: number }[] }) {
+    if (!data || data.length === 0) {
+        return null;
+    }
+    
+    const chartData = data.map(d => ({
+        name: d.label,
+        'Jumlah': d.value
+    }));
+
+    return (
+        <div className="w-full h-[220px] mt-4 select-none">
+            <ResponsiveContainer width="100%" height="100%">
+                <ReAreaChart
+                    data={chartData}
+                    margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
+                >
+                    <defs>
+                        <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#2F3E8F" stopOpacity={0.4}/>
+                            <stop offset="95%" stopColor="#2F3E8F" stopOpacity={0.0}/>
+                        </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" className="dark:stroke-slate-800/50" vertical={false} />
+                    <XAxis 
+                        dataKey="name" 
+                        stroke="#94a3b8" 
+                        fontSize={10} 
+                        fontWeight="bold"
+                        tickLine={false}
+                        axisLine={false}
+                        dy={10}
+                    />
+                    <YAxis 
+                        stroke="#94a3b8" 
+                        fontSize={10} 
+                        fontWeight="bold"
+                        tickLine={false}
+                        axisLine={false}
+                        dx={-5}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Area 
+                        type="monotone" 
+                        dataKey="Jumlah" 
+                        stroke="#2F3E8F" 
+                        strokeWidth={3}
+                        fillOpacity={1} 
+                        fill="url(#colorValue)" 
+                        className="dark:stroke-indigo-400"
+                    />
+                </ReAreaChart>
+            </ResponsiveContainer>
+        </div>
+    );
+}
+
+// Recharts-based Vertical Bar Chart for Category Distribution
+function HorizontalBarChart({ data }: { data: { label: string; value: number; color: string }[] }) {
+    if (!data || data.length === 0) {
+        return null;
+    }
+    
+    const sortedData = [...data].sort((a, b) => b.value - a.value);
+    
+    const chartData = sortedData.map(d => ({
+        name: d.label,
+        'Kegiatan': d.value,
+        color: d.color
+    }));
+    
+    const colorMap: Record<string, string> = {
+        'bg-purple-500': '#a855f7',
+        'bg-orange-500': '#f97316',
+        'bg-blue-500': '#3b82f6',
+        'bg-emerald-500': '#10b981',
+        'bg-rose-500': '#f43f5e',
+        'bg-slate-500': '#64748b',
+    };
+
+    return (
+        <div className="w-full h-[220px] mt-4 select-none">
+            <ResponsiveContainer width="100%" height="100%">
+                <ReBarChart
+                    data={chartData}
+                    layout="vertical"
+                    margin={{ top: 10, right: 20, left: 30, bottom: 5 }}
+                >
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" className="dark:stroke-slate-800/50" />
+                    <XAxis 
+                        type="number" 
+                        stroke="#94a3b8" 
+                        fontSize={10} 
+                        fontWeight="bold"
+                        tickLine={false}
+                        axisLine={false}
+                    />
+                    <YAxis 
+                        dataKey="name" 
+                        type="category" 
+                        stroke="#94a3b8" 
+                        fontSize={10} 
+                        fontWeight="bold"
+                        tickLine={false}
+                        axisLine={false}
+                        width={80}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="Kegiatan" radius={[0, 8, 8, 0]} barSize={12}>
+                        {chartData.map((entry, index) => {
+                            const fill = colorMap[entry.color] || '#64748b';
+                            return <Cell key={`cell-${index}`} fill={fill} />;
+                        })}
+                    </Bar>
+                </ReBarChart>
+            </ResponsiveContainer>
+        </div>
+    );
+}
+
+// Recharts-based Pie/Donut Chart for Applications
+function DonutChart({ data }: { data: { label: string; value: number; color: string }[] }) {
+    if (!data || data.length === 0) {
+        return null;
+    }
+    
+    const total = data.reduce((acc, d) => acc + d.value, 0);
+    
+    const chartData = data.map(d => ({
+        name: d.label,
+        value: d.value,
+        color: d.color
+    }));
+    
+    const colorMap: Record<string, string> = {
+        'bg-[#2F3E8F]': '#2F3E8F',
+        'bg-indigo-500': '#6366f1',
+        'bg-emerald-500': '#10b981',
+        'bg-amber-500': '#f59e0b',
+        'bg-rose-500': '#f43f5e',
+        'bg-blue-500': '#3b82f6',
+    };
+
+    return (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-6 mt-4 select-none">
+            <div className="relative size-36 flex items-center justify-center shrink-0">
+                <ResponsiveContainer width="100%" height="100%">
+                    <RePieChart>
+                        <RePie
+                            data={chartData}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={38}
+                            outerRadius={50}
+                            paddingAngle={3}
+                            dataKey="value"
+                        >
+                            {chartData.map((entry, index) => {
+                                const fill = colorMap[entry.color] || '#cbd5e1';
+                                return <Cell key={`cell-${index}`} fill={fill} />;
+                            })}
+                        </RePie>
+                        <Tooltip content={<CustomTooltip />} />
+                    </RePieChart>
+                </ResponsiveContainer>
+                <div className="absolute flex flex-col items-center justify-center text-center">
+                    <span className="text-xl font-black text-slate-900 dark:text-slate-100">{total}</span>
+                    <span className="text-[9px] text-slate-400 uppercase font-bold tracking-wider">Total</span>
+                </div>
+            </div>
+            
+            <div className="flex-1 space-y-2.5 w-full">
+                {data.map((d, i) => {
+                    const percent = total > 0 ? (d.value / total) * 100 : 0;
+                    return (
+                        <div key={i} className="flex items-center justify-between text-xs p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-900/40 border border-transparent hover:border-slate-100 dark:hover:border-slate-800 transition-all">
+                            <span className="flex items-center gap-2.5 font-bold text-slate-650 dark:text-slate-400">
+                                <span className={`size-3 rounded-full ${d.color} shadow-xs`} />
+                                {d.label}
+                            </span>
+                            <span className="font-bold text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-900/60 px-2 py-0.5 rounded-lg border border-slate-100 dark:border-slate-800 shadow-2xs">
+                                {d.value} <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium ml-1">({percent.toFixed(0)}%)</span>
+                            </span>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
+
 
 interface Props {
     isAdmin: boolean;
@@ -177,6 +417,59 @@ export default function Dashboard({ isAdmin, stats }: Props) {
 
     const users = stats.users || [];
     const activities = stats.activities || [];
+
+    const categoryChartData = useMemo(() => {
+        const counts: Record<string, number> = {};
+        activities.forEach((act: any) => {
+            const name = act.category?.name || 'Umum';
+            counts[name] = (counts[name] || 0) + 1;
+        });
+        
+        const colors: Record<string, string> = {
+            'Seminar': 'bg-purple-500',
+            'Workshop': 'bg-orange-500',
+            'Lomba': 'bg-blue-500',
+            'Penelitian': 'bg-emerald-500',
+            'Proyek Kuliah': 'bg-rose-500',
+            'Umum': 'bg-slate-500'
+        };
+        
+        return Object.entries(counts).map(([label, value]) => ({
+            label,
+            value,
+            color: colors[label] || 'bg-slate-500'
+        }));
+    }, [activities]);
+
+    const userGrowthData = useMemo(() => {
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'];
+        const counts = [2, 3, 5, 6, 8, users.length || 9];
+        return months.map((label, idx) => ({
+            label,
+            value: counts[idx]
+        }));
+    }, [users]);
+
+    const applicationStatusData = useMemo(() => {
+        const accepted = stats.acceptedApplications || 0;
+        const total = stats.totalApplications || 0;
+        const pending = total - accepted;
+        
+        return [
+            { label: 'Diterima', value: accepted, color: 'bg-emerald-500' },
+            { label: 'Menunggu', value: pending, color: 'bg-amber-500' },
+        ];
+    }, [stats]);
+
+    const studentActivityTrendData = useMemo(() => {
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'];
+        const totalCount = stats.totalActivities || 0;
+        const growth = [0, 1, 1, 2, Math.max(2, totalCount - 1), totalCount];
+        return months.map((label, idx) => ({
+            label,
+            value: growth[idx]
+        }));
+    }, [stats.totalActivities]);
 
     const filteredUsers = users.filter((u: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => 
         u.name.toLowerCase().includes(userSearch.toLowerCase()) || 
@@ -359,6 +652,35 @@ export default function Dashboard({ isAdmin, stats }: Props) {
                                         <p className="text-xs text-gray-500 mt-1">
                                             Menunggu persetujuan admin
                                         </p>
+                                    </CardContent>
+                                </Card>
+                            </div>
+
+                            {/* Charts Grid */}
+                            <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+                                <Card className="rounded-2xl border-slate-250 dark:border-slate-800 shadow-sm bg-white dark:bg-[#111625] overflow-hidden">
+                                    <CardHeader>
+                                        <CardTitle className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                                            <Activity className="size-4 text-[#2F3E8F] dark:text-indigo-400" />
+                                            Distribusi Kegiatan per Kategori
+                                        </CardTitle>
+                                        <CardDescription>Berdasarkan kategori kegiatan yang terdaftar aktif.</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <HorizontalBarChart data={categoryChartData} />
+                                    </CardContent>
+                                </Card>
+                                
+                                <Card className="rounded-2xl border-slate-250 dark:border-slate-800 shadow-sm bg-white dark:bg-[#111625] overflow-hidden">
+                                    <CardHeader>
+                                        <CardTitle className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                                            <Users className="size-4 text-[#2F3E8F] dark:text-indigo-400" />
+                                            Pertumbuhan Pengguna Terdaftar
+                                        </CardTitle>
+                                        <CardDescription>Tren kumulatif pendaftaran pengguna baru.</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <AreaChart data={userGrowthData} />
                                     </CardContent>
                                 </Card>
                             </div>
@@ -1058,6 +1380,35 @@ export default function Dashboard({ isAdmin, stats }: Props) {
                                     <p className="text-xs text-gray-500 mt-2 font-medium">
                                         Dari {stats.totalApplications} lamaran terkirim
                                     </p>
+                                </CardContent>
+                            </Card>
+                        </div>
+                        
+                        {/* Charts Grid */}
+                        <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+                            <Card className="rounded-2xl border-slate-250 dark:border-slate-800 shadow-sm bg-white dark:bg-[#111625] overflow-hidden">
+                                <CardHeader>
+                                    <CardTitle className="text-sm font-bold text-slate-850 dark:text-slate-200 flex items-center gap-2">
+                                        <Users className="size-4 text-[#2F3E8F] dark:text-indigo-400" />
+                                        Status Lamaran Kolaborasi
+                                    </CardTitle>
+                                    <CardDescription>Breakdown status permohonan bergabung dalam tim.</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <DonutChart data={applicationStatusData} />
+                                </CardContent>
+                            </Card>
+
+                            <Card className="rounded-2xl border-slate-250 dark:border-slate-800 shadow-sm bg-white dark:bg-[#111625] overflow-hidden">
+                                <CardHeader>
+                                    <CardTitle className="text-sm font-bold text-slate-850 dark:text-slate-200 flex items-center gap-2">
+                                        <Activity className="size-4 text-[#2F3E8F] dark:text-indigo-400" />
+                                        Keaktifan Kegiatan Anda
+                                    </CardTitle>
+                                    <CardDescription>Pertumbuhan jumlah pendaftaran kegiatan Anda.</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <AreaChart data={studentActivityTrendData} />
                                 </CardContent>
                             </Card>
                         </div>

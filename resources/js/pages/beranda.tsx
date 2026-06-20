@@ -129,9 +129,8 @@ export default function Beranda({ recommendedEvents, recentEvents }: BerandaProp
                         <Link
                             key={event.id}
                             href={`/kegiatan/${event.id}`}
-                            className={`flex items-center gap-4 px-4 py-3.5 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors ${
-                                index !== recentEvents.length - 1 ? 'border-b border-gray-100 dark:border-slate-800/60' : ''
-                            }`}
+                            className={`flex items-center gap-4 px-4 py-3.5 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors ${index !== recentEvents.length - 1 ? 'border-b border-gray-100 dark:border-slate-800/60' : ''
+                                }`}
                         >
                             <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-gray-100 dark:bg-slate-800">
                                 <Clock className="size-4 text-gray-400 dark:text-slate-500" />
