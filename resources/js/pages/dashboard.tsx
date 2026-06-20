@@ -225,7 +225,7 @@ function DonutChart({ data }: { data: { label: string; value: number; color: str
             <div className="relative size-36 flex items-center justify-center shrink-0">
                 <ResponsiveContainer width="100%" height="100%">
                     <RePieChart>
-                        <RePie
+                        <Pie
                             data={chartData}
                             cx="50%"
                             cy="50%"
@@ -238,7 +238,7 @@ function DonutChart({ data }: { data: { label: string; value: number; color: str
                                 const fill = colorMap[entry.color] || '#cbd5e1';
                                 return <Cell key={`cell-${index}`} fill={fill} />;
                             })}
-                        </RePie>
+                        </Pie>
                         <Tooltip content={<CustomTooltip />} />
                     </RePieChart>
                 </ResponsiveContainer>
