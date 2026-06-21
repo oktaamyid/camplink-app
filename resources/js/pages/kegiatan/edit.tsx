@@ -36,15 +36,40 @@ const locations = ['Auditorium Kampus', 'Lab Komputer', 'Fakultas Teknik', 'Aula
 
 export default function EditKegiatan({ activity, categories }: Props) {
     const [posterPreview, setPosterPreview] = useState<string | null>(activity.poster_url || null);
-    const { data, setData, post, processing, errors } = useForm({
+    const { data, setData, post, processing, errors } = useForm<{
+        _method: string;
+        title: string;
+        category_id: string;
+        description: string;
+        requirements: string;
+        event_date: string;
+        deadline_date: string;
+        location: string;
+        is_online: boolean;
+        meeting_link: string;
+        quota: string;
+        contact: string;
+        is_team_based: boolean;
+        has_participants: boolean;
+        team_leader_id: string;
+        poster: File | null;
+    }>({
         _method: 'put',
         title: activity.title,
         category_id: activity.category_id.toString(),
         description: activity.description,
         requirements: activity.requirements || '',
         event_date: activity.event_date ? new Date(activity.event_date).toISOString().split('T')[0] : '',
+        deadline_date: activity.deadline_date ? new Date(activity.deadline_date).toISOString().split('T')[0] : '',
         location: activity.location || '',
-
+        is_online: activity.is_online,
+        meeting_link: activity.meeting_link || '',
+        quota: activity.quota?.toString() || '',
+        contact: activity.contact || '',
+        is_team_based: activity.is_team_based,
+        has_participants: activity.has_participants,
+        team_leader_id: activity.team_leader_id?.toString() || '',
+        poster: null,
     });
 
     const handlePosterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
