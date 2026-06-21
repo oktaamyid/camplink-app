@@ -48,7 +48,7 @@ interface CustomTooltipProps {
     payload?: Array<{
         name?: string;
         value?: number | string;
-        payload?: any;
+        payload?: Record<string, unknown>;
         color?: string;
     }>;
     label?: string;
@@ -415,12 +415,12 @@ export default function Dashboard({ isAdmin, stats }: Props) {
         }
     };
 
-    const users = stats.users || [];
-    const activities = stats.activities || [];
+    const users = useMemo(() => stats.users || [], [stats.users]);
+    const activities = useMemo(() => stats.activities || [], [stats.activities]);
 
     const categoryChartData = useMemo(() => {
         const counts: Record<string, number> = {};
-        activities.forEach((act: any) => {
+        activities.forEach((act: { category?: { name?: string } }) => {
             const name = act.category?.name || 'Umum';
             counts[name] = (counts[name] || 0) + 1;
         });

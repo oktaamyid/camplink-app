@@ -23,7 +23,6 @@ import { Link, router, usePage } from '@inertiajs/react';
 import {
     Bell,
     BookOpen,
-    Home,
     LayoutDashboard,
     MessageSquare,
     Search,

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 import CampLinkLayout from '@/layouts/camplink-layout';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import {
@@ -11,7 +11,6 @@ import {
     X,
     UserPlus,
     Trophy,
-    ChevronRight,
 } from 'lucide-react';
 import { useState, FormEventHandler } from 'react';
 

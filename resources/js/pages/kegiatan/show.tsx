@@ -99,7 +99,7 @@ const formatDate = (dateString: string | null) => {
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=300&fit=crop&auto=format';
 
-export default function KegiatanDetail({ activity, userApplication, userRegistration, userRegistrationStatus, isBookmarked, userReview, userCertificate, stats, participants = [], groupConversationId, competitionTeams = [], myTeam }: Props) {
+export default function KegiatanDetail({ activity, userApplication, userRegistration, userRegistrationStatus, isBookmarked, userReview, userCertificate, stats, participants = [], groupConversationId, myTeam }: Props) {
     const { auth } = usePage().props as any;
     const currentUser = auth?.user;
     const isCreator = currentUser?.id === activity.creator_id;

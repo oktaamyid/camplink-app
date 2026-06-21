@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 import CampLinkLayout from '@/layouts/camplink-layout';
 import { Head, Link, router } from '@inertiajs/react';
 import { ArrowLeft, Clock, CheckCircle2, XCircle, Users, Search, Filter } from 'lucide-react';

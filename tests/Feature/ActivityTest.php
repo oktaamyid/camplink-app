@@ -15,7 +15,7 @@ it('requires authentication to create an activity', function () {
 });
 
 it('allows authenticated users to view the create activity page', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->inisiator()->create();
 
     $response = $this->actingAs($user)->get(route('kegiatan.buat'));
 
@@ -25,7 +25,7 @@ it('allows authenticated users to view the create activity page', function () {
 it('allows authenticated users to store an activity', function () {
     Storage::fake('public');
 
-    $user = User::factory()->create();
+    $user = User::factory()->inisiator()->create();
     $category = Category::create([
         'name' => 'Seminar',
         'description' => 'Seminar category',
@@ -55,7 +55,7 @@ it('allows authenticated users to store an activity', function () {
 });
 
 it('validates activity creation data', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->inisiator()->create();
 
     $response = $this->actingAs($user)->post(route('kegiatan.store'), [
         'title' => '',
